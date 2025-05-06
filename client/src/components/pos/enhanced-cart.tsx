@@ -46,6 +46,7 @@ interface Product {
   category_id: number;
   stock: number;
   barcode?: string;
+  unit?: string;
 }
 
 interface CartItem {
@@ -230,12 +231,16 @@ export function EnhancedCart({
                           <p className="text-sm text-muted-foreground">
                             ${typeof item.product.price === 'number'
                               ? item.product.price.toFixed(2)
-                              : Number(item.product.price).toFixed(2)} × {item.quantity}
+                              : Number(item.product.price).toFixed(2)} 
+                            {item.product.unit && item.product.unit !== "each" && 
+                              `/${item.product.unit}`} × {item.quantity}
                           </p>
                           <p className="font-medium text-sm">
                             ${(typeof item.product.price === 'number'
                               ? item.product.price * item.quantity
                               : Number(item.product.price) * item.quantity).toFixed(2)}
+                            {item.product.unit && item.product.unit !== "each" && 
+                             ` (${item.quantity} ${item.product.unit})`}
                           </p>
                         </div>
                         

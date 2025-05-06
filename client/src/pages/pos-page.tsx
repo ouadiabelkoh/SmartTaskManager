@@ -7,10 +7,10 @@ import { isOnline, initOnlineListeners } from "@/lib/offline-sync";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, ShoppingBag } from "lucide-react";
 
-// Import our new enhanced components
-import { POSSidebar } from "@/components/pos/pos-sidebar";
+// Import our components
+import { TouchOptimizedSidebar } from "@/components/pos/touch-optimized-sidebar";
 import { EnhancedProductGrid } from "@/components/pos/enhanced-product-grid";
 import { EnhancedCart } from "@/components/pos/enhanced-cart";
 
@@ -22,6 +22,7 @@ export type Product = {
   category_id: number;
   stock: number;
   barcode?: string; // Added barcode field
+  unit?: string;    // Added unit of measurement field (kg, gram, each, pack)
 };
 
 export type CartItem = {
@@ -169,8 +170,8 @@ export default function POSPage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Enhanced sidebar with category navigation */}
-      <POSSidebar 
+      {/* Touch-optimized sidebar with category navigation */}
+      <TouchOptimizedSidebar 
         categories={categories || []}
         isLoading={categoriesLoading}
         selectedCategory={selectedCategory}
@@ -224,29 +225,29 @@ export default function POSPage() {
             />
           </div>
           
-          {/* Mobile toggle cart button */}
+          {/* Mobile toggle cart button - Now more touch-optimized */}
           {isMobile && (
             <Button
               className={cn(
-                "fixed bottom-4 right-4 rounded-full z-10 shadow-lg",
+                "fixed bottom-6 right-6 rounded-full z-10 shadow-lg h-16 w-16",
+                isTouchOptimized && "h-20 w-20 bottom-8 right-8",
                 cart.length > 0 && "has-badge"
               )}
-              size="lg"
+              size="icon"
               variant={showCart ? "outline" : "default"}
               onClick={toggleCart}
               data-count={cart.length}
             >
               {showCart ? (
-                <Search className="h-5 w-5" />
+                <Search className={cn("h-6 w-6", isTouchOptimized && "h-8 w-8")} />
               ) : (
                 <div className="relative">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shopping-cart">
-                    <circle cx="8" cy="21" r="1"/>
-                    <circle cx="19" cy="21" r="1"/>
-                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-                  </svg>
+                  <ShoppingBag className={cn("h-6 w-6", isTouchOptimized && "h-8 w-8")} />
                   {cart.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className={cn(
+                      "absolute -top-2 -right-2 bg-primary text-primary-foreground font-bold rounded-full flex items-center justify-center",
+                      isTouchOptimized ? "h-8 w-8 text-sm -top-3 -right-3" : "h-6 w-6 text-xs"
+                    )}>
                       {cart.reduce((total, item) => total + item.quantity, 0)}
                     </span>
                   )}
