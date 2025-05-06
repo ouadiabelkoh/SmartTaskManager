@@ -58,15 +58,15 @@ import { Loader2, Plus, Search, UserPlus, Users } from "lucide-react";
 
 // Form schema
 const personSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  name: z.string().min(2, "Full name must be at least 2 characters"),
   type: z.enum(["customer", "supplier", "both"], {
     required_error: "Please select a type",
   }),
-  phone: z.string().optional(),
+  phone: z.string().min(5, "Phone number must be at least 5 characters"),
   email: z.string().email("Invalid email").optional().or(z.literal("")),
-  address: z.string().optional(),
-  id_number: z.string().optional(),
-  notes: z.string().optional(),
+  address: z.string().min(5, "Address must be at least 5 characters"),
+  id_number: z.string().optional().or(z.literal("")),
+  notes: z.string().optional().or(z.literal("")),
 });
 
 type Person = {
@@ -526,7 +526,7 @@ function PersonForm({ onSubmit, defaultValues, isPending }: PersonFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name*</FormLabel>
+              <FormLabel>Full Name*</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -568,7 +568,7 @@ function PersonForm({ onSubmit, defaultValues, isPending }: PersonFormProps) {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone</FormLabel>
+                <FormLabel>Phone Number*</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -581,7 +581,7 @@ function PersonForm({ onSubmit, defaultValues, isPending }: PersonFormProps) {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>Email (Optional)</FormLabel>
                 <FormControl>
                   <Input {...field} type="email" />
                 </FormControl>
@@ -596,7 +596,7 @@ function PersonForm({ onSubmit, defaultValues, isPending }: PersonFormProps) {
           name="address"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Address</FormLabel>
+              <FormLabel>Address*</FormLabel>
               <FormControl>
                 <Textarea {...field} />
               </FormControl>
@@ -610,7 +610,7 @@ function PersonForm({ onSubmit, defaultValues, isPending }: PersonFormProps) {
           name="id_number"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ID/Barcode Number</FormLabel>
+              <FormLabel>ID/Barcode Card Number (Optional)</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
