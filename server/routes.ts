@@ -241,6 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         price: req.body.price, // Keep as string for Drizzle ORM compatibility
         category_id: Number(req.body.category_id),
         stock: Number(req.body.stock) || 0,
+        low_stock_threshold: Number(req.body.low_stock_threshold) || 10,
         barcode: req.body.barcode || '',
         sku: req.body.sku || '',
         image: `/uploads/products/${req.file.filename}` // Store the relative path to the image
@@ -573,8 +574,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get('/api/dashboard/low-stock', async (req, res) => {
     try {
-      const threshold = req.query.threshold ? Number(req.query.threshold) : 10;
-      const lowStockProducts = await storage.getLowStockProducts(threshold);
+      // Use default threshold value of 10 if not specified in the query
+      // The endpoint now uses the low_stock_threshold value from each product
+      const lowStockProducts = await storage.getLowStockProducts();
       
       // Enhance the API response with image paths for each product
       const productsWithImages = lowStockProducts.map(product => {

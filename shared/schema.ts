@@ -55,6 +55,7 @@ export const products = pgTable("products", {
 
 export const insertProductSchema = createInsertSchema(products, {
   name: (schema) => schema.min(2, "Name must be at least 2 characters"),
+  low_stock_threshold: (schema) => schema.nonnegative("Threshold cannot be negative"),
 });
 
 export type InsertProduct = z.infer<typeof insertProductSchema>;

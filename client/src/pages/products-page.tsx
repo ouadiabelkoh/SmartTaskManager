@@ -754,7 +754,7 @@ export default function ProductsPage() {
                           <span className={`px-2 py-1 rounded-full text-xs ${
                             product.stock <= 0 
                               ? "bg-destructive/20 text-destructive" 
-                              : product.stock < 10 
+                              : product.stock < (product.low_stock_threshold || 10)
                                 ? "bg-warning/20 text-warning" 
                                 : "bg-success/20 text-success"
                           }`}>
@@ -873,6 +873,32 @@ export default function ProductsPage() {
                               }}
                             />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={editForm.control}
+                      name="low_stock_threshold"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Low Stock Threshold</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="10" 
+                              {...field}
+                              min={0}
+                              onChange={(e) => {
+                                const value = e.target.value === "" ? "10" : e.target.value;
+                                field.onChange(value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Set the level at which stock is considered low
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
