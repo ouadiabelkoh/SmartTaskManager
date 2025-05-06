@@ -71,13 +71,13 @@ export function EnhancedProductGrid({
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [stockFilter, setStockFilter] = useState<"all" | "in-stock" | "low-stock" | "out-of-stock">("all");
   const [gridLayout, setGridLayout] = useState<"grid" | "list">("grid");
-  const [compactGrid, setCompactGrid] = useState(false);
+  const [viewMode, setViewMode] = useState<"grand" | "normal" | "compact">("normal");
   const isMobile = useMobile();
   
   // Set compact mode automatically on mobile
   useEffect(() => {
     if (isMobile && isTouchOptimized) {
-      setCompactGrid(true);
+      setViewMode("compact");
     }
   }, [isMobile, isTouchOptimized]);
   
@@ -272,16 +272,37 @@ export function EnhancedProductGrid({
             </Button>
           </div>
           
-          {/* Compact grid toggle - visible only on large screens or when explicitly touch optimized */}
+          {/* View mode selection */}
           {(!isMobile || isTouchOptimized) && (
-            <Button
-              variant={compactGrid ? "default" : "outline"}
-              size="sm"
-              onClick={() => setCompactGrid(prev => !prev)}
-              className="ml-auto"
-            >
-              Compact view
-            </Button>
+            <div className="ml-auto flex border rounded-md overflow-hidden">
+              <Button
+                variant={viewMode === "grand" ? "default" : "ghost"}
+                size="sm"
+                className="rounded-none px-2"
+                onClick={() => setViewMode("grand")}
+                title="Grand view - 2 products per row"
+              >
+                Grand
+              </Button>
+              <Button
+                variant={viewMode === "normal" ? "default" : "ghost"}
+                size="sm"
+                className="rounded-none px-2"
+                onClick={() => setViewMode("normal")}
+                title="Normal view - 4 products per row"
+              >
+                Normal
+              </Button>
+              <Button
+                variant={viewMode === "compact" ? "default" : "ghost"}
+                size="sm"
+                className="rounded-none px-2"
+                onClick={() => setViewMode("compact")}
+                title="Compact view - 6 products per row"
+              >
+                Compact
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -290,14 +311,16 @@ export function EnhancedProductGrid({
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
           {isLoading ? (
-            <ProductGridSkeleton gridLayout={gridLayout} compactGrid={compactGrid} />
+            <ProductGridSkeleton gridLayout={gridLayout} viewMode={viewMode} />
           ) : filteredProducts.length > 0 ? (
             <div className={cn(
               "gap-4",
               gridLayout === "grid" 
-                ? compactGrid
-                  ? "grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8"
-                  : "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+                ? viewMode === "grand"
+                  ? "grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2"
+                  : viewMode === "normal"
+                    ? "grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
+                    : "grid grid-cols-3 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6"
                 : "space-y-2"
             )}>
               {filteredProducts.map((product) => (
@@ -306,7 +329,7 @@ export function EnhancedProductGrid({
                     key={product.id}
                     product={product}
                     addToCart={addToCart}
-                    compact={compactGrid}
+                    compact={viewMode === "compact"}
                   />
                 ) : (
                   <Card key={product.id} className={cn(
@@ -383,18 +406,20 @@ export function EnhancedProductGrid({
 // Skeleton loader for product grid
 function ProductGridSkeleton({ 
   gridLayout,
-  compactGrid
+  viewMode
 }: { 
   gridLayout: "grid" | "list",
-  compactGrid: boolean
+  viewMode: "grand" | "normal" | "compact"
 }) {
   return (
     <div className={cn(
       "gap-4",
       gridLayout === "grid" 
-        ? compactGrid
-          ? "grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8"
-          : "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+        ? viewMode === "grand"
+          ? "grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2"
+          : viewMode === "normal"
+            ? "grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4"
+            : "grid grid-cols-3 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6"
         : "space-y-2"
     )}>
       {Array(12).fill(0).map((_, index) => (
@@ -402,7 +427,7 @@ function ProductGridSkeleton({
           <Card key={index} className="overflow-hidden">
             <Skeleton className={cn(
               "w-full", 
-              compactGrid ? "h-24" : "h-36"
+              viewMode === "compact" ? "h-24" : viewMode === "grand" ? "h-48" : "h-36"
             )} />
             <CardContent className="p-3">
               <Skeleton className="h-4 w-full mb-2" />
