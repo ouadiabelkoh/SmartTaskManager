@@ -924,7 +924,7 @@ export default function InventoryPage() {
                           <CardTitle className="text-sm">Price</CardTitle>
                         </CardHeader>
                         <CardContent className="p-3 pt-0">
-                          <p className="text-xl font-semibold">${selectedProduct.price.toFixed(2)}</p>
+                          <p className="text-xl font-semibold">${typeof selectedProduct.price === 'number' ? selectedProduct.price.toFixed(2) : Number(selectedProduct.price).toFixed(2)}</p>
                         </CardContent>
                       </Card>
                       
