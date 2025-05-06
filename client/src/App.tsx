@@ -13,6 +13,7 @@ import CategoriesPage from "@/pages/categories-page";
 import InventoryPage from "@/pages/inventory-page";
 import OrdersPage from "@/pages/orders-page";
 import CustomersPage from "@/pages/customers-page";
+import PeoplePage from "@/pages/people-page";
 import ReportsPage from "@/pages/reports-page";
 import UsersPage from "@/pages/users-page";
 import SettingsPage from "@/pages/settings-page";
@@ -28,6 +29,7 @@ function Router() {
       <ProtectedRoute path="/inventory" component={InventoryPage} />
       <ProtectedRoute path="/orders" component={OrdersPage} />
       <ProtectedRoute path="/customers" component={CustomersPage} />
+      <ProtectedRoute path="/people" component={PeoplePage} />
       <ProtectedRoute path="/reports" component={ReportsPage} />
       <ProtectedRoute path="/users" component={UsersPage} />
       <ProtectedRoute path="/settings" component={SettingsPage} />

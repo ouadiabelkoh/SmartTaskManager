@@ -938,6 +938,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Would normally process the uploaded file
     res.json({ success: true, message: "Data imported successfully" });
   });
+  
+  // People (Customers & Suppliers) API
+  app.get('/api/people', async (req, res) => {
+    try {
+      const type = req.query.type as string | undefined;
+      const search = req.query.search as string | undefined;
+      
+      const people = await storage.listPeople({
+        type,
+        search
+      });
+      
+      res.json(people);
+    } catch (error) {
+      console.error('Error fetching people:', error);
+      res.status(500).json({ message: 'Failed to fetch people' });
+    }
+  });
+  
+  app.post('/api/people', async (req, res) => {
+    try {
+      const person = await storage.createPerson(req.body);
+      
+      // Notify connected clients about the update
+      wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'data_updated',
+            data: { resource: 'people' }
+          }));
+        }
+      });
+      
+      res.status(201).json(person);
+    } catch (error) {
+      console.error('Error creating person:', error);
+      res.status(500).json({ message: 'Failed to create person' });
+    }
+  });
+  
+  app.get('/api/people/:id', async (req, res) => {
+    try {
+      const person = await storage.getPerson(Number(req.params.id));
+      if (!person) {
+        return res.status(404).json({ message: 'Person not found' });
+      }
+      
+      res.json(person);
+    } catch (error) {
+      console.error('Error fetching person:', error);
+      res.status(500).json({ message: 'Failed to fetch person' });
+    }
+  });
+  
+  app.put('/api/people/:id', async (req, res) => {
+    try {
+      const updatedPerson = await storage.updatePerson(Number(req.params.id), req.body);
+      
+      // Notify connected clients about the update
+      wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'data_updated',
+            data: { resource: 'people' }
+          }));
+        }
+      });
+      
+      res.json(updatedPerson);
+    } catch (error) {
+      console.error('Error updating person:', error);
+      res.status(500).json({ message: 'Failed to update person' });
+    }
+  });
+  
+  app.delete('/api/people/:id', async (req, res) => {
+    try {
+      // Check if person has any transactions before deleting
+      const hasTransactions = await storage.checkPersonHasTransactions(Number(req.params.id));
+      
+      if (hasTransactions) {
+        return res.status(409).json({
+          message: 'Cannot delete a person who has transactions',
+          hasTransactions: true
+        });
+      }
+      
+      const result = await storage.deletePerson(Number(req.params.id));
+      if (!result) {
+        return res.status(404).json({ message: 'Person not found' });
+      }
+      
+      // Notify connected clients about the update
+      wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'data_updated',
+            data: { resource: 'people' }
+          }));
+        }
+      });
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting person:', error);
+      res.status(500).json({ message: 'Failed to delete person' });
+    }
+  });
+  
+  app.get('/api/people/:id/transactions', async (req, res) => {
+    try {
+      const transactions = await storage.getPersonTransactions(Number(req.params.id));
+      res.json(transactions);
+    } catch (error) {
+      console.error('Error fetching person transactions:', error);
+      res.status(500).json({ message: 'Failed to fetch person transactions' });
+    }
+  });
 
   return httpServer;
 }
