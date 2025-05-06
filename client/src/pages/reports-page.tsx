@@ -7,6 +7,14 @@ import { isOnline } from "@/lib/offline-sync";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { 
   Tabs, 
   TabsContent, 
   TabsList, 
@@ -20,18 +28,44 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { 
   BarChart, 
   LineChart,
   PieChart, 
   Download, 
-  Calendar,
+  FileDown,
+  FileSpreadsheet,
+  FilePdf,
+  Calendar as CalendarIcon,
   Printer,
   ChevronLeft,
   ChevronRight,
-  RefreshCcw
+  RefreshCcw,
+  Search,
+  Filter,
+  Eye,
+  Users,
+  User,
+  CreditCard,
+  Wallet,
+  BanknoteIcon,
+  ArrowDown,
+  ArrowUp
 } from "lucide-react";
-import { addDays, format, startOfDay, startOfMonth, startOfWeek, subDays, subMonths, subWeeks } from "date-fns";
+import { 
+  format, 
+  startOfDay, 
+  startOfMonth, 
+  startOfWeek, 
+  subDays, 
+  endOfDay,
+  endOfMonth,
+  endOfWeek
+} from "date-fns";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -44,7 +78,8 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
-import { Line, Bar, Pie } from 'react-chartjs-2';
+import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
+import { DateRange } from "react-day-picker";
 
 // Register ChartJS components
 ChartJS.register(
