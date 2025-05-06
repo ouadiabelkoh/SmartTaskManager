@@ -39,7 +39,7 @@ import {
   Download, 
   FileDown,
   FileSpreadsheet,
-  FilePdf,
+  FileText,
   Calendar as CalendarIcon,
   Printer,
   ChevronLeft,
@@ -54,7 +54,8 @@ import {
   Wallet,
   BanknoteIcon,
   ArrowDown,
-  ArrowUp
+  ArrowUp,
+  Loader2
 } from "lucide-react";
 import { 
   format, 
@@ -672,7 +673,7 @@ export default function ReportsPage() {
                   <FileSpreadsheet className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" size="icon" title="Export to PDF" onClick={exportToPDF}>
-                  <FilePdf className="h-4 w-4" />
+                  <FileText className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" size="icon" title="Print Report" onClick={printReport}>
                   <Printer className="h-4 w-4" />
@@ -895,7 +896,7 @@ export default function ReportsPage() {
                           <SelectValue placeholder="All Statuses" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value={undefined}>All Statuses</SelectItem>
+                          <SelectItem value="">All Statuses</SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
                           <SelectItem value="pending">Pending</SelectItem>
                           <SelectItem value="processing">Processing</SelectItem>
@@ -914,7 +915,7 @@ export default function ReportsPage() {
                           <SelectValue placeholder="All Methods" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value={undefined}>All Methods</SelectItem>
+                          <SelectItem value="">All Methods</SelectItem>
                           <SelectItem value="cash">Cash</SelectItem>
                           <SelectItem value="card">Card</SelectItem>
                           <SelectItem value="credit">Credit</SelectItem>
@@ -933,7 +934,7 @@ export default function ReportsPage() {
                           <SelectValue placeholder="All Cashiers" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value={undefined}>All Cashiers</SelectItem>
+                          <SelectItem value="">All Cashiers</SelectItem>
                           <SelectItem value="Youssef">Youssef</SelectItem>
                           <SelectItem value="Aisha">Aisha</SelectItem>
                           <SelectItem value="Mohammed">Mohammed</SelectItem>

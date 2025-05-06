@@ -14,7 +14,7 @@ import InventoryPage from "@/pages/inventory-page";
 import OrdersPage from "@/pages/orders-page";
 import CustomersPage from "@/pages/customers-page";
 import PeoplePage from "@/pages/people-page";
-import ReportsPage from "@/pages/reports-page";
+import ReportsPage from "@/pages/new-reports-page";
 import UsersPage from "@/pages/users-page";
 import SettingsPage from "@/pages/settings-page";
 
