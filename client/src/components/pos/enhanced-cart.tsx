@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { Badge } from "@/components/ui/badge";
 import { 
   Trash, 
@@ -186,7 +186,7 @@ export function EnhancedCart({
         </TabsList>
         
         <TabsContent value="current" className="flex-1 flex flex-col data-[state=active]:flex-1">
-          <ScrollArea className="h-full flex-1 overflow-y-auto touch-auto">
+          <div className="flex-1 overflow-auto h-full overflow-y-auto touch-auto">
             {cartItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full p-6 text-center">
                 <PackagePlus className="h-12 w-12 text-muted-foreground mb-4" />
@@ -313,7 +313,7 @@ export function EnhancedCart({
                 ))}
               </div>
             )}
-          </ScrollArea>
+          </div>
           
           {/* Tax and discount controls */}
           {cartItems.length > 0 && (
