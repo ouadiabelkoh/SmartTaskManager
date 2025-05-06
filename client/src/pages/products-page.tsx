@@ -498,31 +498,72 @@ export default function ProductsPage() {
                         </TabsContent>
                         
                         <TabsContent value="inventory" className="pt-4">
-                          <FormField
-                            control={createForm.control}
-                            name="stock"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Stock Quantity</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    placeholder="0" 
-                                    {...field}
-                                    min={0}
-                                    onChange={(e) => {
-                                      const value = e.target.value === "" ? "0" : e.target.value;
-                                      field.onChange(value);
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormDescription>
-                                  The current quantity available in inventory
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormField
+                              control={createForm.control}
+                              name="stock"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Stock Quantity</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      placeholder="0" 
+                                      {...field}
+                                      min={0}
+                                      onChange={(e) => {
+                                        const value = e.target.value === "" ? "0" : e.target.value;
+                                        field.onChange(value);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormDescription>
+                                    The current quantity available in inventory
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={createForm.control}
+                              name="low_stock_threshold"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Low Stock Threshold</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      placeholder="10" 
+                                      min={0}
+                                      {...field}
+                                      onChange={(e) => {
+                                        const value = e.target.value === "" ? "10" : e.target.value;
+                                        field.onChange(value);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormDescription>
+                                    <div className="space-y-1 mt-1">
+                                      <div className="flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-destructive"></div>
+                                        <span className="text-xs">Out of stock (0)</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-warning"></div>
+                                        <span className="text-xs">Low stock (below threshold)</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-success"></div>
+                                        <span className="text-xs">Sufficient stock</span>
+                                      </div>
+                                    </div>
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                           
                           <div className="grid grid-cols-2 gap-4 mt-4">
                             <FormField

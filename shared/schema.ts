@@ -45,6 +45,7 @@ export const products = pgTable("products", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   category_id: integer("category_id").references(() => categories.id).notNull(),
   stock: integer("stock").default(0).notNull(),
+  low_stock_threshold: integer("low_stock_threshold").default(10).notNull(),
   barcode: text("barcode"),
   sku: text("sku"),
   image: text("image"),
