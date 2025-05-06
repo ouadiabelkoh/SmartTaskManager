@@ -624,7 +624,7 @@ function PersonForm({ onSubmit, defaultValues, isPending }: PersonFormProps) {
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notes</FormLabel>
+              <FormLabel>Notes (Optional)</FormLabel>
               <FormControl>
                 <Textarea {...field} />
               </FormControl>

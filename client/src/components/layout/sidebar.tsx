@@ -144,21 +144,21 @@ export function Sidebar({ currentPath }: SidebarProps) {
             </div>
             
             {mainMenuItems.map((item) => (
-              <Link key={item.path} href={item.path}>
-                <a 
-                  className={cn(
-                    "sidebar-item flex items-center px-4 py-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
-                    currentPath === item.path && "active"
-                  )}
-                >
-                  <span className={cn(
-                    "text-lg mr-3", 
-                    currentPath === item.path ? "text-sidebar-primary" : "text-sidebar-foreground/60"
-                  )}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </a>
+              <Link 
+                key={item.path} 
+                href={item.path}
+                className={cn(
+                  "sidebar-item flex items-center px-4 py-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
+                  currentPath === item.path && "active"
+                )}
+              >
+                <span className={cn(
+                  "text-lg mr-3", 
+                  currentPath === item.path ? "text-sidebar-primary" : "text-sidebar-foreground/60"
+                )}>
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
               </Link>
             ))}
             
@@ -167,21 +167,21 @@ export function Sidebar({ currentPath }: SidebarProps) {
             </div>
             
             {catalogItems.map((item) => (
-              <Link key={item.path} href={item.path}>
-                <a 
-                  className={cn(
-                    "sidebar-item flex items-center px-4 py-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
-                    currentPath === item.path && "active"
-                  )}
-                >
-                  <span className={cn(
-                    "text-lg mr-3", 
-                    currentPath === item.path ? "text-sidebar-primary" : "text-sidebar-foreground/60"
-                  )}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </a>
+              <Link 
+                key={item.path} 
+                href={item.path}
+                className={cn(
+                  "sidebar-item flex items-center px-4 py-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
+                  currentPath === item.path && "active"
+                )}
+              >
+                <span className={cn(
+                  "text-lg mr-3", 
+                  currentPath === item.path ? "text-sidebar-primary" : "text-sidebar-foreground/60"
+                )}>
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
               </Link>
             ))}
             
@@ -190,21 +190,21 @@ export function Sidebar({ currentPath }: SidebarProps) {
             </div>
             
             {salesItems.map((item) => (
-              <Link key={item.path} href={item.path}>
-                <a 
-                  className={cn(
-                    "sidebar-item flex items-center px-4 py-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
-                    currentPath === item.path && "active"
-                  )}
-                >
-                  <span className={cn(
-                    "text-lg mr-3", 
-                    currentPath === item.path ? "text-sidebar-primary" : "text-sidebar-foreground/60"
-                  )}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </a>
+              <Link 
+                key={item.path} 
+                href={item.path}
+                className={cn(
+                  "sidebar-item flex items-center px-4 py-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
+                  currentPath === item.path && "active"
+                )}
+              >
+                <span className={cn(
+                  "text-lg mr-3", 
+                  currentPath === item.path ? "text-sidebar-primary" : "text-sidebar-foreground/60"
+                )}>
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
               </Link>
             ))}
             
@@ -213,21 +213,21 @@ export function Sidebar({ currentPath }: SidebarProps) {
             </div>
             
             {reportItems.map((item) => (
-              <Link key={item.path} href={item.path}>
-                <a 
-                  className={cn(
-                    "sidebar-item flex items-center px-4 py-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
-                    currentPath === item.path && "active"
-                  )}
-                >
-                  <span className={cn(
-                    "text-lg mr-3", 
-                    currentPath === item.path ? "text-sidebar-primary" : "text-sidebar-foreground/60"
-                  )}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </a>
+              <Link 
+                key={item.path} 
+                href={item.path}
+                className={cn(
+                  "sidebar-item flex items-center px-4 py-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
+                  currentPath === item.path && "active"
+                )}
+              >
+                <span className={cn(
+                  "text-lg mr-3", 
+                  currentPath === item.path ? "text-sidebar-primary" : "text-sidebar-foreground/60"
+                )}>
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
               </Link>
             ))}
             
@@ -236,21 +236,21 @@ export function Sidebar({ currentPath }: SidebarProps) {
             </div>
             
             {settingsItems.map((item) => (
-              <Link key={item.path} href={item.path}>
-                <a 
-                  className={cn(
-                    "sidebar-item flex items-center px-4 py-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
-                    currentPath === item.path && "active"
-                  )}
-                >
-                  <span className={cn(
-                    "text-lg mr-3", 
-                    currentPath === item.path ? "text-sidebar-primary" : "text-sidebar-foreground/60"
-                  )}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </a>
+              <Link 
+                key={item.path} 
+                href={item.path}
+                className={cn(
+                  "sidebar-item flex items-center px-4 py-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
+                  currentPath === item.path && "active"
+                )}
+              >
+                <span className={cn(
+                  "text-lg mr-3", 
+                  currentPath === item.path ? "text-sidebar-primary" : "text-sidebar-foreground/60"
+                )}>
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
               </Link>
             ))}
           </nav>
