@@ -1,12 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { OfflineAlert } from "@/components/layout/offline-alert";
-import { ProductGrid } from "@/components/pos/product-grid";
-import { Cart } from "@/components/pos/cart";
 import { PaymentModal } from "@/components/pos/payment-modal";
 import { isOnline, initOnlineListeners } from "@/lib/offline-sync";
+import { useTheme } from "@/hooks/use-theme";
+import { useMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
+
+// Import our new enhanced components
+import { POSSidebar } from "@/components/pos/pos-sidebar";
+import { EnhancedProductGrid } from "@/components/pos/enhanced-product-grid";
+import { EnhancedCart } from "@/components/pos/enhanced-cart";
 
 export type Product = {
   id: number;
@@ -15,6 +22,7 @@ export type Product = {
   image?: string;
   category_id: number;
   stock: number;
+  barcode?: string; // Added barcode field
 };
 
 export type CartItem = {
@@ -26,14 +34,31 @@ export type CartItem = {
 export type Category = {
   id: number;
   name: string;
+  image?: string; // Added image field for categories
 };
 
 export default function POSPage() {
+  const { theme } = useTheme();
+  const isMobile = useMobile();
   const [isOffline, setIsOffline] = useState(!isOnline());
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [showCart, setShowCart] = useState(!isMobile);
+  const [isTouchOptimized, setIsTouchOptimized] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Check if device is touch-capable
+  useEffect(() => {
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouchOptimized(isTouchDevice);
+    
+    // On mobile, hide cart by default
+    if (isMobile) {
+      setShowCart(false);
+    }
+  }, [isMobile]);
 
   // Connect to online/offline listeners
   useEffect(() => {
@@ -53,21 +78,28 @@ export default function POSPage() {
     queryKey: ["/api/products", selectedCategory, searchQuery],
   });
 
-  // Add item to cart
-  const addToCart = (product: Product) => {
+  // Add item to cart with specific quantity
+  const addToCart = (product: Product, quantity: number = 1) => {
+    if (quantity <= 0) return;
+    
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.product.id === product.id);
       
       if (existingItem) {
         return prevCart.map(item => 
           item.product.id === product.id 
-            ? { ...item, quantity: item.quantity + 1 } 
+            ? { ...item, quantity: item.quantity + quantity } 
             : item
         );
       } else {
-        return [...prevCart, { id: Date.now(), product, quantity: 1 }];
+        return [...prevCart, { id: Date.now(), product, quantity }];
       }
     });
+    
+    // On mobile, show cart after adding item
+    if (isMobile && !showCart) {
+      setShowCart(true);
+    }
   };
 
   // Update cart item quantity
@@ -125,41 +157,108 @@ export default function POSPage() {
     console.log("Payment processed successfully");
   };
 
+  // Focus search input
+  const focusSearch = () => {
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  };
+  
+  // Toggle cart visibility on mobile
+  const toggleCart = () => {
+    setShowCart(prev => !prev);
+  };
+
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar currentPath="/pos" />
+    <div className={cn(
+      "flex h-screen overflow-hidden",
+      theme === "dark" ? "bg-background" : "bg-background"
+    )}>
+      {/* Enhanced sidebar with category navigation */}
+      <POSSidebar 
+        categories={categories || []}
+        isLoading={categoriesLoading}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        onSearch={focusSearch}
+      />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden relative">
         <Header title="Point of Sale" />
         
+        {isOffline && <OfflineAlert />}
+        
         <main className="flex-1 overflow-hidden flex flex-col md:flex-row">
-          {isOffline && <OfflineAlert />}
-          
           {/* Products Section */}
-          <div className="flex-1 overflow-y-auto p-4 bg-background">
-            <ProductGrid 
-              products={products || []} 
-              categories={categories || []}
-              isLoading={productsLoading || categoriesLoading}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              addToCart={addToCart}
-            />
+          <div 
+            className={cn(
+              "flex-1 overflow-hidden transition-all duration-300",
+              showCart && isMobile ? "hidden" : "block"
+            )}
+          >
+            <div className="h-full p-4">
+              <EnhancedProductGrid 
+                products={products || []} 
+                categories={categories || []}
+                isLoading={productsLoading || categoriesLoading}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                addToCart={addToCart}
+                isTouchOptimized={isTouchOptimized}
+              />
+            </div>
           </div>
           
           {/* Cart Section */}
-          <div className="w-full md:w-96 border-t md:border-t-0 md:border-l border-border flex flex-col bg-card">
-            <Cart 
+          <div 
+            className={cn(
+              "border-t md:border-t-0 md:border-l border-border flex-shrink-0 bg-card transition-all duration-300",
+              isMobile ? (showCart ? "w-full" : "hidden") : "w-96"
+            )}
+          >
+            <EnhancedCart 
               cartItems={cart}
               updateQuantity={updateCartItemQuantity}
               removeItem={removeCartItem}
               clearCart={clearCart}
               cartTotal={cartTotal}
               openPaymentModal={() => setIsPaymentModalOpen(true)}
+              isTouchOptimized={isTouchOptimized}
             />
           </div>
+          
+          {/* Mobile toggle cart button */}
+          {isMobile && (
+            <Button
+              className={cn(
+                "fixed bottom-4 right-4 rounded-full z-10 shadow-lg",
+                cart.length > 0 && "has-badge"
+              )}
+              size="lg"
+              variant={showCart ? "outline" : "default"}
+              onClick={toggleCart}
+              data-count={cart.length}
+            >
+              {showCart ? (
+                <Search className="h-5 w-5" />
+              ) : (
+                <div className="relative">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shopping-cart">
+                    <circle cx="8" cy="21" r="1"/>
+                    <circle cx="19" cy="21" r="1"/>
+                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+                  </svg>
+                  {cart.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                      {cart.reduce((total, item) => total + item.quantity, 0)}
+                    </span>
+                  )}
+                </div>
+              )}
+            </Button>
+          )}
         </main>
       </div>
       
@@ -169,6 +268,24 @@ export default function POSPage() {
         total={cartTotal}
         onPayment={processPayment}
       />
+      
+      {/* Add styles for cart badge */}
+      <style jsx global>{`
+        .has-badge {
+          position: relative;
+        }
+        @media (max-width: 768px) {
+          .main-content {
+            transition: all 0.3s ease;
+          }
+        }
+        @media (hover: none) and (pointer: coarse) {
+          /* Bigger touch targets for touch devices */
+          button, input, select {
+            min-height: 44px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
