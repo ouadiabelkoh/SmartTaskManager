@@ -35,6 +35,8 @@ const PostgresSessionStore = connectPg(session);
 export interface IStorage {
   // User functions
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByPhoneNumber(phoneNumber: string): Promise<User | undefined>;
+  getUserByBarcode(barcode: string): Promise<User | undefined>;
   getUser(id: number): Promise<User | undefined>;
   createUser(userData: InsertUser): Promise<User>;
   updateUser(id: number, userData: Partial<InsertUser>): Promise<User>;
@@ -112,6 +114,16 @@ export class DatabaseStorage implements IStorage {
   // User functions
   async getUserByUsername(username: string): Promise<User | undefined> {
     const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    return result[0];
+  }
+  
+  async getUserByPhoneNumber(phoneNumber: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.phone_number, phoneNumber)).limit(1);
+    return result[0];
+  }
+  
+  async getUserByBarcode(barcode: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.barcode, barcode)).limit(1);
     return result[0];
   }
 
