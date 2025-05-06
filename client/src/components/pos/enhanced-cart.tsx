@@ -185,13 +185,120 @@ export function EnhancedCart({
           <TabsTrigger value="recent">Recent</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="current" className="h-full flex flex-col overflow-hidden">
-          <div style={{ 
-            flex: 1,
-            overflow: "auto",
-            WebkitOverflowScrolling: "touch",
-            minHeight: 0 // Critical for making flex child scrollable
-          }}>
+        <TabsContent value="current" className="h-full flex flex-col">
+          {/* Tax and discount controls */}
+          {cartItems.length > 0 && (
+            <div className="p-3 border-b border-border flex-shrink-0">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size={buttonSize} className="w-full justify-between">
+                    <div className="flex items-center">
+                      <ReceiptText className={cn(iconSize, "mr-2")} />
+                      Tax & Discount
+                    </div>
+                    <div className="flex items-center text-muted-foreground">
+                      {(discount > 0 || tax > 0) && (
+                        <span className="mr-1">
+                          {discount > 0 && `-${discount}%`} 
+                          {discount > 0 && tax > 0 && " · "} 
+                          {tax > 0 && `+${tax}%`}
+                        </span>
+                      )}
+                      <ChevronRight className="h-4 w-4" />
+                    </div>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent side="bottom" className="w-80">
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Tax & Discount</h4>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Discount (%)</label>
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        max="100" 
+                        value={discount} 
+                        onChange={(e) => setDiscount(Number(e.target.value))}
+                      />
+                      {discount > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Discount: ${typeof discountAmount === 'number' ? discountAmount.toFixed(2) : Number(discountAmount).toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Tax (%)</label>
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        max="100" 
+                        value={tax} 
+                        onChange={(e) => setTax(Number(e.target.value))}
+                      />
+                      {tax > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Tax: ${typeof taxAmount === 'number' ? taxAmount.toFixed(2) : Number(taxAmount).toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+          
+          {/* Cart totals and checkout button for non-empty cart */}
+          {cartItems.length > 0 && (
+            <div className={cn(
+              "flex-col border-b p-4 space-y-3 flex-shrink-0", 
+              isTouchOptimized && "p-4 space-y-3"
+            )}>
+              <div className="w-full space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>${typeof cartTotal === 'number' ? cartTotal.toFixed(2) : Number(cartTotal).toFixed(2)}</span>
+                </div>
+                
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Discount ({discount}%)</span>
+                    <span className="text-destructive">-${typeof discountAmount === 'number' ? discountAmount.toFixed(2) : Number(discountAmount).toFixed(2)}</span>
+                  </div>
+                )}
+                
+                {tax > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tax ({tax}%)</span>
+                    <span>${typeof taxAmount === 'number' ? taxAmount.toFixed(2) : Number(taxAmount).toFixed(2)}</span>
+                  </div>
+                )}
+                
+                <div className={cn(
+                  "flex justify-between font-medium pt-2 border-t",
+                  isTouchOptimized ? "text-lg" : "text-base"
+                )}>
+                  <span>Total</span>
+                  <span>${typeof finalTotal === 'number' ? finalTotal.toFixed(2) : Number(finalTotal).toFixed(2)}</span>
+                </div>
+              </div>
+              
+              <Button 
+                className="w-full"
+                size={isTouchOptimized ? "xl" : "lg"}
+                onClick={openPaymentModal}
+              >
+                <CreditCard className={cn("mr-2", isTouchOptimized ? "h-6 w-6" : "h-5 w-5")} />
+                <span className={isTouchOptimized ? "text-lg" : ""}>
+                  Checkout {itemCount > 0 && `(${itemCount} ${itemCount === 1 ? 'item' : 'items'})`}
+                </span>
+              </Button>
+            </div>
+          )}
+          
+          {/* Cart items section - scrollable */}
+          <div className="flex-1 overflow-auto min-h-0 webkit-overflow-scrolling-touch">
             {cartItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full p-6 text-center">
                 <PackagePlus className="h-12 w-12 text-muted-foreground mb-4" />
@@ -319,117 +426,6 @@ export function EnhancedCart({
               </div>
             )}
           </div>
-          
-          {/* Tax and discount controls */}
-          {cartItems.length > 0 && (
-            <div className="p-3 border-t border-border">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size={buttonSize} className="w-full justify-between">
-                    <div className="flex items-center">
-                      <ReceiptText className={cn(iconSize, "mr-2")} />
-                      Tax & Discount
-                    </div>
-                    <div className="flex items-center text-muted-foreground">
-                      {(discount > 0 || tax > 0) && (
-                        <span className="mr-1">
-                          {discount > 0 && `-${discount}%`} 
-                          {discount > 0 && tax > 0 && " · "} 
-                          {tax > 0 && `+${tax}%`}
-                        </span>
-                      )}
-                      <ChevronRight className="h-4 w-4" />
-                    </div>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent side="top" className="w-80">
-                  <div className="space-y-4">
-                    <h4 className="font-medium">Tax & Discount</h4>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Discount (%)</label>
-                      <Input 
-                        type="number" 
-                        min="0" 
-                        max="100" 
-                        value={discount} 
-                        onChange={(e) => setDiscount(Number(e.target.value))}
-                      />
-                      {discount > 0 && (
-                        <p className="text-xs text-muted-foreground">
-                          Discount: ${typeof discountAmount === 'number' ? discountAmount.toFixed(2) : Number(discountAmount).toFixed(2)}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Tax (%)</label>
-                      <Input 
-                        type="number" 
-                        min="0" 
-                        max="100" 
-                        value={tax} 
-                        onChange={(e) => setTax(Number(e.target.value))}
-                      />
-                      {tax > 0 && (
-                        <p className="text-xs text-muted-foreground">
-                          Tax: ${typeof taxAmount === 'number' ? taxAmount.toFixed(2) : Number(taxAmount).toFixed(2)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-          )}
-          
-          {/* Cart totals and checkout button */}
-          {cartItems.length > 0 && (
-            <div className={cn(
-              "flex-col border-t p-4 space-y-4", 
-              isTouchOptimized && "p-5 space-y-5"
-            )}>
-              <div className="w-full space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>${typeof cartTotal === 'number' ? cartTotal.toFixed(2) : Number(cartTotal).toFixed(2)}</span>
-                </div>
-                
-                {discount > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Discount ({discount}%)</span>
-                    <span className="text-destructive">-${typeof discountAmount === 'number' ? discountAmount.toFixed(2) : Number(discountAmount).toFixed(2)}</span>
-                  </div>
-                )}
-                
-                {tax > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Tax ({tax}%)</span>
-                    <span>${typeof taxAmount === 'number' ? taxAmount.toFixed(2) : Number(taxAmount).toFixed(2)}</span>
-                  </div>
-                )}
-                
-                <div className={cn(
-                  "flex justify-between font-medium pt-2 border-t",
-                  isTouchOptimized ? "text-lg" : "text-base"
-                )}>
-                  <span>Total</span>
-                  <span>${typeof finalTotal === 'number' ? finalTotal.toFixed(2) : Number(finalTotal).toFixed(2)}</span>
-                </div>
-              </div>
-              
-              <Button 
-                className="w-full"
-                size={isTouchOptimized ? "xl" : "lg"}
-                onClick={openPaymentModal}
-              >
-                <CreditCard className={cn("mr-2", isTouchOptimized ? "h-6 w-6" : "h-5 w-5")} />
-                <span className={isTouchOptimized ? "text-lg" : ""}>
-                  Checkout {itemCount > 0 && `(${itemCount} ${itemCount === 1 ? 'item' : 'items'})`}
-                </span>
-              </Button>
-            </div>
-          )}
         </TabsContent>
         
         <TabsContent value="saved" className="h-full flex flex-col overflow-hidden">
