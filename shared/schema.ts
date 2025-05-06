@@ -8,15 +8,29 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
-  role: text("role", { enum: ["admin", "manager", "cashier"] }).default("cashier").notNull(),
+  pin_code: text("pin_code"),
+  phone_number: text("phone_number"),
+  barcode: text("barcode"),
+  role: text("role", { enum: ["admin", "manager", "cashier", "staff"] }).default("cashier").notNull(),
   permissions: text("permissions").array().default([]).notNull(),
   active: boolean("active").default(true).notNull(),
+  failed_login_attempts: integer("failed_login_attempts").default(0),
+  last_login_at: timestamp("last_login_at"),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users, {
   username: (schema) => schema.min(3, "Username must be at least 3 characters"),
   password: (schema) => schema.min(6, "Password must be at least 6 characters"),
+  pin_code: (schema) => schema.optional().refine(
+    (val) => !val || /^\d{4,6}$/.test(val),
+    "PIN must be 4-6 digits"
+  ),
+  phone_number: (schema) => schema.optional().refine(
+    (val) => !val || /^[\d\+\-\(\)]{8,15}$/.test(val),
+    "Enter a valid phone number"
+  ),
+  barcode: (schema) => schema.optional()
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
