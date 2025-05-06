@@ -998,6 +998,10 @@ export default function InventoryPage() {
                         <h4 className="text-sm font-semibold mb-1">Barcode</h4>
                         <p className="text-sm">{selectedProduct.barcode || 'N/A'}</p>
                       </div>
+                      <div>
+                        <h4 className="text-sm font-semibold mb-1">Unit</h4>
+                        <p className="text-sm capitalize">{selectedProduct.unit || 'Each'}</p>
+                      </div>
                     </div>
                     
                     <div className="flex space-x-3 mt-6">
@@ -1178,6 +1182,35 @@ export default function InventoryPage() {
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={newProductForm.control}
+                      name="unit"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Unit of Measurement *</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a unit" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="each">Each (Single item)</SelectItem>
+                              <SelectItem value="kilogram">Kilogram (kg)</SelectItem>
+                              <SelectItem value="gram">Gram (g)</SelectItem>
+                              <SelectItem value="pack">Pack</SelectItem>
+                              <SelectItem value="liter">Liter (L)</SelectItem>
+                              <SelectItem value="milliliter">Milliliter (mL)</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
