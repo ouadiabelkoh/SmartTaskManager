@@ -164,6 +164,7 @@ export default function InventoryPage() {
       description: selectedProduct?.description || "",
       price: selectedProduct?.price || 0,
       category_id: selectedProduct?.category_id || 0,
+      unit: selectedProduct?.unit || "each",
       barcode: selectedProduct?.barcode || "",
       sku: selectedProduct?.sku || "",
       stock: selectedProduct?.stock || 0,
@@ -179,6 +180,7 @@ export default function InventoryPage() {
         description: selectedProduct.description,
         price: selectedProduct.price,
         category_id: selectedProduct.category_id,
+        unit: selectedProduct.unit || "each",
         barcode: selectedProduct.barcode || "",
         sku: selectedProduct.sku || "",
         stock: selectedProduct.stock,
@@ -195,6 +197,7 @@ export default function InventoryPage() {
       description: "",
       price: 0,
       category_id: 0,
+      unit: "each",
       barcode: "",
       sku: "",
       stock: 0,
@@ -239,6 +242,7 @@ export default function InventoryPage() {
         description: "",
         price: 0,
         category_id: 0,
+        unit: "each",
         barcode: "",
         sku: "",
         stock: 0,
@@ -771,6 +775,35 @@ export default function InventoryPage() {
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={productEditForm.control}
+                      name="unit"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Unit of Measurement *</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a unit" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="each">Each (Single item)</SelectItem>
+                              <SelectItem value="kilogram">Kilogram (kg)</SelectItem>
+                              <SelectItem value="gram">Gram (g)</SelectItem>
+                              <SelectItem value="pack">Pack</SelectItem>
+                              <SelectItem value="liter">Liter (L)</SelectItem>
+                              <SelectItem value="milliliter">Milliliter (mL)</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
