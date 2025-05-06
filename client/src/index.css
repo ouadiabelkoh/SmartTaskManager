@@ -125,12 +125,52 @@
     @apply border-l-[3px] border-l-transparent hover:bg-secondary transition-colors;
   }
   
+  .bg-sidebar {
+    background-color: hsl(var(--sidebar-background));
+  }
+  
+  .text-sidebar-foreground {
+    color: hsl(var(--sidebar-foreground));
+  }
+  
+  .bg-sidebar-primary {
+    background-color: hsl(var(--sidebar-primary));
+  }
+  
+  .text-sidebar-primary-foreground {
+    color: hsl(var(--sidebar-primary-foreground));
+  }
+  
+  .border-sidebar-border {
+    border-color: hsl(var(--sidebar-border));
+  }
+  
+  .bg-sidebar-accent {
+    background-color: hsl(var(--sidebar-accent));
+  }
+  
+  /* POS-specific styles */
+  .has-badge {
+    position: relative;
+  }
+  
   @media (max-width: 768px) {
     .sidebar {
       @apply fixed -left-full transition-all duration-300 ease-in-out z-50;
     }
     .sidebar.open {
       @apply left-0;
+    }
+    
+    .main-content {
+      transition: all 0.3s ease;
+    }
+  }
+  
+  @media (hover: none) and (pointer: coarse) {
+    /* Bigger touch targets for touch devices */
+    button, input, select {
+      min-height: 44px;
     }
   }
 }

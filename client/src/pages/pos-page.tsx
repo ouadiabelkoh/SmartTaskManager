@@ -4,7 +4,6 @@ import { Header } from "@/components/layout/header";
 import { OfflineAlert } from "@/components/layout/offline-alert";
 import { PaymentModal } from "@/components/pos/payment-modal";
 import { isOnline, initOnlineListeners } from "@/lib/offline-sync";
-import { useTheme } from "@/hooks/use-theme";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -38,7 +37,6 @@ export type Category = {
 };
 
 export default function POSPage() {
-  const { theme } = useTheme();
   const isMobile = useMobile();
   const [isOffline, setIsOffline] = useState(!isOnline());
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -170,10 +168,7 @@ export default function POSPage() {
   };
 
   return (
-    <div className={cn(
-      "flex h-screen overflow-hidden",
-      theme === "dark" ? "bg-background" : "bg-background"
-    )}>
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Enhanced sidebar with category navigation */}
       <POSSidebar 
         categories={categories || []}
@@ -269,23 +264,7 @@ export default function POSPage() {
         onPayment={processPayment}
       />
       
-      {/* Add styles for cart badge */}
-      <style jsx global>{`
-        .has-badge {
-          position: relative;
-        }
-        @media (max-width: 768px) {
-          .main-content {
-            transition: all 0.3s ease;
-          }
-        }
-        @media (hover: none) and (pointer: coarse) {
-          /* Bigger touch targets for touch devices */
-          button, input, select {
-            min-height: 44px;
-          }
-        }
-      `}</style>
+      {/* The styles are now in global CSS */}
     </div>
   );
 }
