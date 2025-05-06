@@ -186,7 +186,7 @@ export function EnhancedCart({
         </TabsList>
         
         <TabsContent value="current" className="flex-1 flex flex-col data-[state=active]:flex-1">
-          <ScrollArea className="flex-1">
+          <ScrollArea className="h-full flex-1 overflow-y-auto touch-auto">
             {cartItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full p-6 text-center">
                 <PackagePlus className="h-12 w-12 text-muted-foreground mb-4" />
@@ -198,10 +198,16 @@ export function EnhancedCart({
             ) : (
               <div className="divide-y divide-border">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="p-4 flex items-start">
+                  <div key={item.id} className={cn(
+                    "p-4 flex items-start touch-manipulation", 
+                    isTouchOptimized && "p-5"
+                  )}>
                     {/* Product image */}
                     {item.product.image && (
-                      <div className="h-12 w-12 bg-muted rounded-md overflow-hidden mr-3 flex-shrink-0">
+                      <div className={cn(
+                        "bg-muted rounded-md overflow-hidden mr-3 flex-shrink-0",
+                        isTouchOptimized ? "h-16 w-16" : "h-12 w-12"
+                      )}>
                         <img 
                           src={item.product.image} 
                           alt={item.product.name} 
@@ -213,29 +219,43 @@ export function EnhancedCart({
                     {/* Product details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between">
-                        <h3 className="font-medium text-sm text-foreground truncate mb-1" title={item.product.name}>
+                        <h3 className={cn(
+                            "font-medium truncate mb-1", 
+                            isTouchOptimized ? "text-base" : "text-sm"
+                          )} 
+                          title={item.product.name}
+                        >
                           {item.product.name}
                         </h3>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 -mr-2 text-muted-foreground hover:text-destructive"
+                          className={cn(
+                            "text-muted-foreground hover:text-destructive -mr-2",
+                            isTouchOptimized ? "h-8 w-8" : "h-6 w-6"
+                          )}
                           onClick={() => removeItem(item.id)}
                         >
-                          <Trash className="h-3 w-3" />
+                          <Trash className={isTouchOptimized ? "h-4 w-4" : "h-3 w-3"} />
                         </Button>
                       </div>
                       
                       <div className="flex justify-between items-end">
                         <div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className={cn(
+                            "text-muted-foreground",
+                            isTouchOptimized ? "text-sm" : "text-xs"
+                          )}>
                             ${typeof item.product.price === 'number'
                               ? item.product.price.toFixed(2)
                               : Number(item.product.price).toFixed(2)} 
                             {item.product.unit && item.product.unit !== "each" && 
                               `/${item.product.unit}`} × {item.quantity}
                           </p>
-                          <p className="font-medium text-sm">
+                          <p className={cn(
+                            "font-medium",
+                            isTouchOptimized ? "text-base" : "text-sm"
+                          )}>
                             ${(typeof item.product.price === 'number'
                               ? item.product.price * item.quantity
                               : Number(item.product.price) * item.quantity).toFixed(2)}
@@ -245,14 +265,20 @@ export function EnhancedCart({
                         </div>
                         
                         {/* Quantity controls */}
-                        <div className="flex items-center border rounded-md overflow-hidden">
+                        <div className={cn(
+                          "flex items-center border rounded-md overflow-hidden shadow-sm",
+                          isTouchOptimized && "scale-110 transform-gpu origin-right"
+                        )}>
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-7 w-7 rounded-none"
+                            className={cn(
+                              "rounded-none",
+                              isTouchOptimized ? "h-9 w-9" : "h-7 w-7"
+                            )}
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           >
-                            <Minus className="h-3 w-3" />
+                            <Minus className={isTouchOptimized ? "h-4 w-4" : "h-3 w-3"} />
                           </Button>
                           <Input
                             type="number"
@@ -264,15 +290,21 @@ export function EnhancedCart({
                                 updateQuantity(item.id, value);
                               }
                             }}
-                            className="w-10 h-7 text-center border-none p-0"
+                            className={cn(
+                              "text-center border-none p-0",
+                              isTouchOptimized ? "w-12 h-9" : "w-10 h-7"
+                            )}
                           />
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-7 w-7 rounded-none"
+                            className={cn(
+                              "rounded-none",
+                              isTouchOptimized ? "h-9 w-9" : "h-7 w-7"
+                            )}
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           >
-                            <Plus className="h-3 w-3" />
+                            <Plus className={isTouchOptimized ? "h-4 w-4" : "h-3 w-3"} />
                           </Button>
                         </div>
                       </div>
@@ -347,7 +379,10 @@ export function EnhancedCart({
           )}
           
           {/* Cart totals and checkout button */}
-          <CardFooter className="flex-col p-4 gap-4 border-t">
+          <CardFooter className={cn(
+            "flex-col border-t", 
+            isTouchOptimized ? "p-5 gap-5" : "p-4 gap-4"
+          )}>
             <div className="w-full space-y-1">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
@@ -368,7 +403,10 @@ export function EnhancedCart({
                 </div>
               )}
               
-              <div className="flex justify-between font-medium text-base pt-2 border-t">
+              <div className={cn(
+                "flex justify-between font-medium pt-2 border-t",
+                isTouchOptimized ? "text-lg" : "text-base"
+              )}>
                 <span>Total</span>
                 <span>${typeof finalTotal === 'number' ? finalTotal.toFixed(2) : Number(finalTotal).toFixed(2)}</span>
               </div>
@@ -376,12 +414,14 @@ export function EnhancedCart({
             
             <Button 
               className="w-full"
-              size="lg"
+              size={isTouchOptimized ? "xl" : "lg"}
               disabled={cartItems.length === 0}
               onClick={openPaymentModal}
             >
-              <CreditCard className="mr-2 h-5 w-5" />
-              Checkout {itemCount > 0 && `(${itemCount} ${itemCount === 1 ? 'item' : 'items'})`}
+              <CreditCard className={cn("mr-2", isTouchOptimized ? "h-6 w-6" : "h-5 w-5")} />
+              <span className={isTouchOptimized ? "text-lg" : ""}>
+                Checkout {itemCount > 0 && `(${itemCount} ${itemCount === 1 ? 'item' : 'items'})`}
+              </span>
             </Button>
           </CardFooter>
         </TabsContent>
