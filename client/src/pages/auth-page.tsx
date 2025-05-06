@@ -192,14 +192,14 @@ export default function AuthPage() {
   };
 
   // Render a PIN pad button
-  const PinButton = ({ value, label, onClick, className }: { value: string; label?: string; onClick: (value: string) => void; className?: string }) => (
+  const PinButton = ({ value, label, onClick, className, children }: { value: string; label?: string; onClick: (value: string) => void; className?: string; children?: React.ReactNode }) => (
     <Button
       type="button"
       variant="outline"
       className={cn("h-14 text-xl font-semibold", className)}
       onClick={() => onClick(value)}
     >
-      {label || value}
+      {children || label || value}
     </Button>
   );
 

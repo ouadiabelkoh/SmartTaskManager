@@ -16,6 +16,10 @@ async function seed() {
   try {
     console.log("Starting database seeding...");
 
+    console.log("Running database schema update...");
+    console.log("Note: The schema should already be updated via drizzle schema definition in shared/schema.ts");
+    console.log("If you're experiencing schema issues, please run 'npm run db:push' to apply schema changes")
+
     // Check if admin user exists
     const existingAdmin = await db.query.users.findFirst({
       where: eq(schema.users.username, "admin"),
@@ -28,11 +32,64 @@ async function seed() {
         username: "admin",
         password: await hashPassword("admin123"),
         role: "admin",
+        pin_code: await hashPassword("1234"),
+        phone_number: "555-ADMIN",
+        barcode: "ADMIN-BARCODE-123",
       });
       await db.insert(schema.users).values(adminUser);
       console.log("Admin user created.");
     } else {
-      console.log("Admin user already exists, skipping creation.");
+      // Update admin user with new fields if they're missing
+      console.log("Updating admin user with authentication methods...");
+      if (!existingAdmin.pin_code) {
+        await db.update(schema.users)
+          .set({ 
+            pin_code: await hashPassword("1234"),
+            phone_number: existingAdmin.phone_number || "555-ADMIN",
+            barcode: existingAdmin.barcode || "ADMIN-BARCODE-123" 
+          })
+          .where(eq(schema.users.id, existingAdmin.id));
+        console.log("Admin user updated with additional authentication methods.");
+      } else {
+        console.log("Admin user already has authentication methods, skipping update.");
+      }
+    }
+    
+    // Create other test users with different authentication methods
+    const testUsers = [
+      {
+        username: "cashier",
+        password: await hashPassword("cashier123"),
+        pin_code: await hashPassword("5678"),
+        role: "cashier",
+      },
+      {
+        username: "manager",
+        password: await hashPassword("manager123"),
+        phone_number: "555-MANAGER",
+        role: "manager",
+      },
+      {
+        username: "staff",
+        password: await hashPassword("staff123"),
+        barcode: "STAFF-BARCODE-456",
+        role: "staff",
+      }
+    ];
+    
+    for (const user of testUsers) {
+      const existingUser = await db.query.users.findFirst({
+        where: eq(schema.users.username, user.username),
+      });
+      
+      if (!existingUser) {
+        console.log(`Creating ${user.username} user...`);
+        const validUser = schema.insertUserSchema.parse(user);
+        await db.insert(schema.users).values(validUser);
+        console.log(`${user.username} user created.`);
+      } else {
+        console.log(`${user.username} user already exists, skipping creation.`);
+      }
     }
 
     // Create categories if they don't exist
