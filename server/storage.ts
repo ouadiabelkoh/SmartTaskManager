@@ -1,6 +1,6 @@
 import { db } from "@db";
 import connectPg from "connect-pg-simple";
-import { eq, desc, and, or, like, gte, lte, isNull } from "drizzle-orm";
+import { eq, desc, and, or, like, gte, lte, isNull, count } from "drizzle-orm";
 import session from "express-session";
 import { pool } from "@db";
 import {
@@ -11,6 +11,7 @@ import {
   inventory,
   orders,
   orderItems,
+  people,
   User,
   InsertUser,
   Product,
@@ -19,6 +20,8 @@ import {
   InsertCategory,
   Customer,
   InsertCustomer,
+  Person,
+  InsertPerson,
   Order,
   InsertOrder,
   OrderItem,
@@ -53,8 +56,17 @@ export interface IStorage {
   deleteProduct(id: number): Promise<boolean>;
   listProducts(options?: { categoryId?: number }): Promise<Product[]>;
   getLowStockProducts(threshold?: number): Promise<Product[]>;
+  
+  // People (Customers & Suppliers) functions
+  createPerson(personData: InsertPerson): Promise<Person>;
+  getPerson(id: number): Promise<Person | undefined>;
+  updatePerson(id: number, personData: Partial<InsertPerson>): Promise<Person>;
+  deletePerson(id: number): Promise<boolean>;
+  listPeople(filter?: { type?: string, search?: string }): Promise<Person[]>;
+  checkPersonHasTransactions(id: number): Promise<boolean>;
+  getPersonTransactions(id: number): Promise<any[]>;
 
-  // Customer functions
+  // Customer functions (now using People underneath)
   createCustomer(customerData: InsertCustomer): Promise<Customer>;
   getCustomer(id: number): Promise<Customer | undefined>;
   updateCustomer(id: number, customerData: Partial<InsertCustomer>): Promise<Customer>;
@@ -200,29 +212,103 @@ export class DatabaseStorage implements IStorage {
     return result as Product[];
   }
 
-  // Customer functions
-  async createCustomer(customerData: InsertCustomer): Promise<Customer> {
-    const result = await db.insert(customers).values(customerData).returning();
+  // People (Customers & Suppliers) functions
+  async createPerson(personData: InsertPerson): Promise<Person> {
+    const result = await db.insert(people).values(personData).returning();
     return result[0];
   }
 
-  async getCustomer(id: number): Promise<Customer | undefined> {
-    const result = await db.select().from(customers).where(eq(customers.id, id)).limit(1);
+  async getPerson(id: number): Promise<Person | undefined> {
+    const result = await db.select().from(people).where(eq(people.id, id)).limit(1);
     return result[0];
   }
 
-  async updateCustomer(id: number, customerData: Partial<InsertCustomer>): Promise<Customer> {
-    const result = await db.update(customers).set(customerData).where(eq(customers.id, id)).returning();
+  async updatePerson(id: number, personData: Partial<InsertPerson>): Promise<Person> {
+    const result = await db.update(people).set(personData).where(eq(people.id, id)).returning();
     return result[0];
   }
 
-  async deleteCustomer(id: number): Promise<boolean> {
-    const result = await db.delete(customers).where(eq(customers.id, id)).returning();
+  async deletePerson(id: number): Promise<boolean> {
+    const result = await db.delete(people).where(eq(people.id, id)).returning();
     return result.length > 0;
   }
 
+  async listPeople(filter?: { type?: string, search?: string }): Promise<Person[]> {
+    let query = db.select().from(people);
+    
+    if (filter?.type && filter.type !== 'all') {
+      query = query.where(eq(people.type, filter.type));
+    }
+    
+    if (filter?.search) {
+      query = query.where(
+        or(
+          like(people.name, `%${filter.search}%`),
+          like(people.email, `%${filter.search}%`),
+          like(people.phone, `%${filter.search}%`)
+        )
+      );
+    }
+    
+    return await query.orderBy(people.name);
+  }
+  
+  async checkPersonHasTransactions(id: number): Promise<boolean> {
+    // Check if this person has any orders associated with them
+    const result = await db.select({ count: count() })
+      .from(orders)
+      .where(eq(orders.customer_id, id));
+      
+    return result[0].count > 0;
+  }
+  
+  async getPersonTransactions(id: number): Promise<any[]> {
+    // Get all orders for this person
+    const personOrders = await db.select()
+      .from(orders)
+      .where(eq(orders.customer_id, id))
+      .orderBy(desc(orders.created_at));
+      
+    // Enhance each order with its items
+    const ordersWithItems = await Promise.all(
+      personOrders.map(async (order) => {
+        const items = await db.select()
+          .from(orderItems)
+          .where(eq(orderItems.order_id, order.id));
+          
+        return {
+          ...order,
+          items
+        };
+      })
+    );
+    
+    return ordersWithItems;
+  }
+  
+  // Maintain backward compatibility with Customer functions
+  async createCustomer(customerData: InsertCustomer): Promise<Customer> {
+    const personData = {
+      ...customerData,
+      type: "customer" as const
+    };
+    return this.createPerson(personData);
+  }
+
+  async getCustomer(id: number): Promise<Customer | undefined> {
+    return this.getPerson(id);
+  }
+
+  async updateCustomer(id: number, customerData: Partial<InsertCustomer>): Promise<Customer> {
+    return this.updatePerson(id, customerData);
+  }
+
+  async deleteCustomer(id: number): Promise<boolean> {
+    return this.deletePerson(id);
+  }
+
   async listCustomers(): Promise<Customer[]> {
-    return await db.select().from(customers).orderBy(customers.name);
+    return this.listPeople({ type: 'customer' });
   }
 
   // Inventory functions
