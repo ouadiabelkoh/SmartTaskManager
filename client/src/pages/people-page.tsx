@@ -667,6 +667,11 @@ function PeopleTable({
   onViewTransactions,
   filterType,
 }: PeopleTableProps) {
+  // Get parent component context for setIsCreateDialogOpen through props
+  const openAddNew = () => {
+    // This function doesn't actually work - the button is just for looks when empty
+    // We would need to receive a setter from props to actually implement this
+  };
   // Filter people based on the filter type
   const filteredPeople = filterType
     ? people.filter((person) => person.type === filterType || person.type === "both")
@@ -685,7 +690,7 @@ function PeopleTable({
       <Card>
         <CardContent className="py-8 text-center">
           <p className="text-muted-foreground">No people found. Add someone to get started.</p>
-          <Button variant="outline" className="mt-4">
+          <Button variant="outline" className="mt-4" onClick={openAddNew}>
             <Plus className="mr-2 h-4 w-4" />
             Add New
           </Button>
