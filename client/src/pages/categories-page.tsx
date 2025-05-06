@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { OfflineAlert } from "@/components/layout/offline-alert";
@@ -33,7 +34,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, Pencil, Trash2 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
+import { 
+  Loader2, 
+  Plus, 
+  Pencil, 
+  Trash2, 
+  Upload, 
+  Image as ImageIcon, 
+  ChevronRight, 
+  Package
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -43,6 +55,8 @@ type Category = {
   id: number;
   name: string;
   description?: string;
+  image?: string;
+  product_count?: number;
 };
 
 const categorySchema = z.object({

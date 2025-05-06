@@ -27,6 +27,7 @@ export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
+  image: text("image"),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 

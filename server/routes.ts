@@ -13,14 +13,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuth(app);
   
-  // Create uploads directory if it doesn't exist
-  const uploadsDir = path.resolve('./public/uploads/products');
-  fs.ensureDirSync(uploadsDir);
+  // Create uploads directories if they don't exist
+  const productUploadsDir = path.resolve('./public/uploads/products');
+  const categoryUploadsDir = path.resolve('./public/uploads/categories');
+  fs.ensureDirSync(productUploadsDir);
+  fs.ensureDirSync(categoryUploadsDir);
   
   // Configure multer for file uploads
   const multerStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, uploadsDir);
+      // Determine upload directory based on route
+      if (req.path.includes('/categories')) {
+        cb(null, categoryUploadsDir);
+      } else {
+        cb(null, productUploadsDir);
+      }
     },
     filename: function (req, file, cb) {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -148,6 +155,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Category image upload endpoint
+  app.post('/api/categories/upload', upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No image file provided' });
+      }
+      
+      // Extract category data from form fields
+      const categoryData = {
+        name: req.body.name,
+        description: req.body.description || '',
+        image: `/uploads/categories/${req.file.filename}` // Store the relative path to the image
+      };
+      
+      // Create category with image
+      const category = await storage.createCategory(categoryData);
+      
+      // Notify connected clients about the update
+      wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'data_updated',
+            data: { resource: 'categories' }
+          }));
+        }
+      });
+      
+      res.status(201).json(category);
+    } catch (error) {
+      console.error('Error creating category with image:', error);
+      
+      // Clean up the uploaded file if category creation failed
+      if (req.file) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (unlinkError) {
+          console.error('Error deleting uploaded file:', unlinkError);
+        }
+      }
+      
+      res.status(500).json({ message: 'Failed to create category with image' });
+    }
+  });
+  
   app.get('/api/categories/:id', async (req, res) => {
     try {
       const category = await storage.getCategory(Number(req.params.id));
@@ -179,6 +230,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating category:', error);
       res.status(500).json({ message: 'Failed to update category' });
+    }
+  });
+  
+  // Category image update endpoint
+  app.put('/api/categories/:id/image', upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No image file provided' });
+      }
+      
+      const categoryId = Number(req.params.id);
+      const existingCategory = await storage.getCategory(categoryId);
+      
+      if (!existingCategory) {
+        // Clean up the uploaded file if category doesn't exist
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (unlinkError) {
+          console.error('Error deleting uploaded file:', unlinkError);
+        }
+        return res.status(404).json({ message: 'Category not found' });
+      }
+      
+      // Delete old image if it exists
+      if (existingCategory.image) {
+        try {
+          const oldImagePath = path.join(__dirname, '..', 'public', existingCategory.image);
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath);
+          }
+        } catch (unlinkError) {
+          console.error('Error deleting old image file:', unlinkError);
+        }
+      }
+      
+      // Update category with new image
+      const updatedCategory = await storage.updateCategory(categoryId, {
+        image: `/uploads/categories/${req.file.filename}`
+      });
+      
+      // Notify connected clients about the update
+      wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'data_updated',
+            data: { resource: 'categories' }
+          }));
+        }
+      });
+      
+      res.json(updatedCategory);
+    } catch (error) {
+      console.error('Error updating category image:', error);
+      
+      // Clean up the uploaded file if update failed
+      if (req.file) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (unlinkError) {
+          console.error('Error deleting uploaded file:', unlinkError);
+        }
+      }
+      
+      res.status(500).json({ message: 'Failed to update category image' });
     }
   });
   
