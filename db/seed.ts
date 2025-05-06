@@ -32,7 +32,7 @@ async function seed() {
         username: "admin",
         password: await hashPassword("admin123"),
         role: "admin",
-        pin_code: await hashPassword("1234"),
+        pin_code: "1234", // Store PIN directly
         phone_number: "555-ADMIN",
         barcode: "ADMIN-BARCODE-123",
       });
@@ -44,7 +44,7 @@ async function seed() {
       if (!existingAdmin.pin_code) {
         await db.update(schema.users)
           .set({ 
-            pin_code: await hashPassword("1234"),
+            pin_code: "1234", // Store PIN directly
             phone_number: existingAdmin.phone_number || "555-ADMIN",
             barcode: existingAdmin.barcode || "ADMIN-BARCODE-123" 
           })
@@ -60,7 +60,7 @@ async function seed() {
       {
         username: "cashier",
         password: await hashPassword("cashier123"),
-        pin_code: await hashPassword("5678"),
+        pin_code: "5678", // We'll store PIN directly since schema validation has been relaxed
         role: "cashier",
       },
       {

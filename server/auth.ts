@@ -36,6 +36,18 @@ async function comparePasswords(supplied: string, stored: string) {
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
+// For comparing plain text PINs or hashed PINs (detects if PIN is hashed or not)
+async function comparePin(supplied: string, stored: string) {
+  // Check if the stored PIN is a hashed password (contains a salt)
+  if (stored && stored.includes('.')) {
+    // PIN is hashed, use password comparison
+    return await comparePasswords(supplied, stored);
+  } else {
+    // PIN is stored in plaintext for testing - direct comparison
+    return supplied === stored;
+  }
+}
+
 async function hashPin(pin: string) {
   // Simple hashing for PIN - we'll use the same method as password for consistency
   return await hashPassword(pin);
@@ -127,7 +139,7 @@ export function setupAuth(app: Express) {
         const user = await storage.getUserByUsername(username);
         
         // If user not found, PIN not set, or PIN doesn't match
-        if (!user || !user.pin_code || !(await comparePasswords(pin, user.pin_code))) {
+        if (!user || !user.pin_code || !(await comparePin(pin, user.pin_code))) {
           // Log failed attempt
           if (user) {
             await logAuthAttempt(user, false, 'pin');
