@@ -414,6 +414,7 @@ export default function InventoryPage() {
                   <TableHead>SKU</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Stock</TableHead>
+                  <TableHead>Unit</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -421,13 +422,13 @@ export default function InventoryPage() {
               <TableBody>
                 {productsLoading || categoriesLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
                       <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                     </TableCell>
                   </TableRow>
                 ) : sortedProducts?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
                       No products found.
                     </TableCell>
                   </TableRow>
@@ -438,6 +439,7 @@ export default function InventoryPage() {
                       <TableCell>{product.sku || "—"}</TableCell>
                       <TableCell>{getCategoryName(product.category_id)}</TableCell>
                       <TableCell>{product.stock}</TableCell>
+                      <TableCell className="capitalize">{product.unit || "each"}</TableCell>
                       <TableCell>
                         {product.stock <= 0 ? (
                           <span className="px-2 py-1 rounded-full text-xs bg-destructive/20 text-destructive">
