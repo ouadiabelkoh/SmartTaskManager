@@ -72,6 +72,7 @@ type Product = {
   price: number;
   category_id: number;
   stock: number;
+  unit: "each" | "kilogram" | "gram" | "pack" | "liter" | "milliliter";
   barcode?: string;
   sku?: string;
   image?: string;
@@ -109,6 +110,7 @@ const productEditSchema = z.object({
   description: z.string().optional(),
   price: z.coerce.number().positive("Price must be greater than 0"),
   category_id: z.coerce.number().positive("Please select a category"),
+  unit: z.enum(["each", "kilogram", "gram", "pack", "liter", "milliliter"]).default("each"),
   barcode: z.string().optional(),
   sku: z.string().optional(),
   stock: z.coerce.number().int("Stock must be a whole number").nonnegative("Stock cannot be negative"),
