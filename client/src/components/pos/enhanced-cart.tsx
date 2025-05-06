@@ -384,51 +384,52 @@ export function EnhancedCart({
           )}
           
           {/* Cart totals and checkout button */}
-          <CardFooter className={cn(
-            "flex-col border-t", 
-            isTouchOptimized ? "p-5 gap-5" : "p-4 gap-4"
-          )}>
-            <div className="w-full space-y-1">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span>${typeof cartTotal === 'number' ? cartTotal.toFixed(2) : Number(cartTotal).toFixed(2)}</span>
+          {cartItems.length > 0 && (
+            <div className={cn(
+              "flex-col border-t p-4 space-y-4", 
+              isTouchOptimized && "p-5 space-y-5"
+            )}>
+              <div className="w-full space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>${typeof cartTotal === 'number' ? cartTotal.toFixed(2) : Number(cartTotal).toFixed(2)}</span>
+                </div>
+                
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Discount ({discount}%)</span>
+                    <span className="text-destructive">-${typeof discountAmount === 'number' ? discountAmount.toFixed(2) : Number(discountAmount).toFixed(2)}</span>
+                  </div>
+                )}
+                
+                {tax > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tax ({tax}%)</span>
+                    <span>${typeof taxAmount === 'number' ? taxAmount.toFixed(2) : Number(taxAmount).toFixed(2)}</span>
+                  </div>
+                )}
+                
+                <div className={cn(
+                  "flex justify-between font-medium pt-2 border-t",
+                  isTouchOptimized ? "text-lg" : "text-base"
+                )}>
+                  <span>Total</span>
+                  <span>${typeof finalTotal === 'number' ? finalTotal.toFixed(2) : Number(finalTotal).toFixed(2)}</span>
+                </div>
               </div>
               
-              {discount > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Discount ({discount}%)</span>
-                  <span className="text-destructive">-${typeof discountAmount === 'number' ? discountAmount.toFixed(2) : Number(discountAmount).toFixed(2)}</span>
-                </div>
-              )}
-              
-              {tax > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tax ({tax}%)</span>
-                  <span>${typeof taxAmount === 'number' ? taxAmount.toFixed(2) : Number(taxAmount).toFixed(2)}</span>
-                </div>
-              )}
-              
-              <div className={cn(
-                "flex justify-between font-medium pt-2 border-t",
-                isTouchOptimized ? "text-lg" : "text-base"
-              )}>
-                <span>Total</span>
-                <span>${typeof finalTotal === 'number' ? finalTotal.toFixed(2) : Number(finalTotal).toFixed(2)}</span>
-              </div>
+              <Button 
+                className="w-full"
+                size={isTouchOptimized ? "xl" : "lg"}
+                onClick={openPaymentModal}
+              >
+                <CreditCard className={cn("mr-2", isTouchOptimized ? "h-6 w-6" : "h-5 w-5")} />
+                <span className={isTouchOptimized ? "text-lg" : ""}>
+                  Checkout {itemCount > 0 && `(${itemCount} ${itemCount === 1 ? 'item' : 'items'})`}
+                </span>
+              </Button>
             </div>
-            
-            <Button 
-              className="w-full"
-              size={isTouchOptimized ? "xl" : "lg"}
-              disabled={cartItems.length === 0}
-              onClick={openPaymentModal}
-            >
-              <CreditCard className={cn("mr-2", isTouchOptimized ? "h-6 w-6" : "h-5 w-5")} />
-              <span className={isTouchOptimized ? "text-lg" : ""}>
-                Checkout {itemCount > 0 && `(${itemCount} ${itemCount === 1 ? 'item' : 'items'})`}
-              </span>
-            </Button>
-          </CardFooter>
+          )}
         </TabsContent>
         
         <TabsContent value="saved" className="h-full flex flex-col overflow-hidden">
