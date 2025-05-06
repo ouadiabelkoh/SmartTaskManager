@@ -353,7 +353,7 @@ export function EnhancedProductGrid({
                         <div className="min-w-0">
                           <h3 className="font-medium text-sm truncate" title={product.name}>{product.name}</h3>
                           <div className="flex items-center flex-wrap gap-x-3 text-sm">
-                            <span className="font-semibold">${product.price.toFixed(2)}</span>
+                            <span className="font-semibold">${typeof product.price === 'number' ? product.price.toFixed(2) : Number(product.price).toFixed(2)}</span>
                             <span className={cn(
                               "text-xs",
                               product.stock <= 0 

@@ -39,11 +39,31 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Search, ArrowUpDown, AlertTriangle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Loader2, 
+  Search, 
+  ArrowUpDown, 
+  AlertTriangle, 
+  Edit, 
+  Trash,
+  Plus,
+  Package,
+  FileText,
+  ImageIcon,
+  Calendar,
+  User,
+  Clock
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { useAuth } from "@/hooks/use-auth";
 
 type Product = {
   id: number;
