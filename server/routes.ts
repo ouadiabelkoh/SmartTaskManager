@@ -767,8 +767,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Users API
   app.get('/api/users', async (req, res) => {
     try {
-      // Check if user is admin
-      if (!req.isAuthenticated() || !req.user || !req.user.role || req.user.role !== 'admin') {
+      // Check if user is admin or manager
+      if (!req.isAuthenticated() || !req.user || !req.user.role || (req.user.role !== 'admin' && req.user.role !== 'manager')) {
         return res.status(403).json({ message: 'Access denied' });
       }
       
@@ -782,8 +782,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post('/api/users', async (req, res) => {
     try {
-      // Check if user is admin
-      if (!req.isAuthenticated() || !req.user || !req.user.role || req.user.role !== 'admin') {
+      // Check if user is admin or manager
+      if (!req.isAuthenticated() || !req.user || !req.user.role || (req.user.role !== 'admin' && req.user.role !== 'manager')) {
         return res.status(403).json({ message: 'Access denied' });
       }
       
@@ -808,8 +808,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.put('/api/users/:id', async (req, res) => {
     try {
-      // Check if user is admin
-      if (!req.isAuthenticated() || !req.user || !req.user.role || req.user.role !== 'admin') {
+      // Check if user is admin or manager
+      if (!req.isAuthenticated() || !req.user || !req.user.role || (req.user.role !== 'admin' && req.user.role !== 'manager')) {
         return res.status(403).json({ message: 'Access denied' });
       }
       
@@ -834,8 +834,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.delete('/api/users/:id', async (req, res) => {
     try {
-      // Check if user is admin
-      if (!req.isAuthenticated() || !req.user || !req.user.role || req.user.role !== 'admin') {
+      // Check if user is admin or manager
+      if (!req.isAuthenticated() || !req.user || !req.user.role || (req.user.role !== 'admin' && req.user.role !== 'manager')) {
         return res.status(403).json({ message: 'Access denied' });
       }
       
