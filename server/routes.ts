@@ -1,14 +1,50 @@
-import type { Express } from "express";
+import express, { type Express, type Request } from "express";
 import { createServer, type Server } from "http";
-import { WebSocketServer } from "ws";
+import { WebSocketServer, WebSocket } from "ws";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { z } from "zod";
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs-extra';
 import { orderItemsInsertSchema, ordersInsertSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuth(app);
+  
+  // Create uploads directory if it doesn't exist
+  const uploadsDir = path.resolve('./public/uploads/products');
+  fs.ensureDirSync(uploadsDir);
+  
+  // Configure multer for file uploads
+  const multerStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, uploadsDir);
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const fileExt = path.extname(file.originalname);
+      cb(null, uniqueSuffix + fileExt);
+    }
+  });
+  
+  const upload = multer({ 
+    storage: multerStorage,
+    limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB
+    },
+    fileFilter: function(req, file, cb) {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+      if (!allowedTypes.includes(file.mimetype)) {
+        return cb(new Error('Only JPG, PNG, and WebP images are allowed'));
+      }
+      cb(null, true);
+    }
+  });
+  
+  // Serve static files from public directory
+  app.use('/uploads', express.static(path.resolve('./public/uploads')));
   
   // Create HTTP server
   const httpServer = createServer(app);
@@ -188,6 +224,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error creating product:', error);
       res.status(500).json({ message: 'Failed to create product' });
+    }
+  });
+  
+  // Product image upload endpoint
+  app.post('/api/products/upload', upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No image file provided' });
+      }
+      
+      // Extract product data from form fields
+      const productData = {
+        name: req.body.name,
+        description: req.body.description || '',
+        price: Number(req.body.price),
+        category_id: Number(req.body.category_id),
+        stock: Number(req.body.stock) || 0,
+        barcode: req.body.barcode || '',
+        sku: req.body.sku || '',
+        image: `/uploads/products/${req.file.filename}` // Store the relative path to the image
+      };
+      
+      // Create product with image
+      const product = await storage.createProduct(productData);
+      
+      // Notify connected clients about the update
+      wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'data_updated',
+            data: { resource: 'products' }
+          }));
+        }
+      });
+      
+      res.status(201).json(product);
+    } catch (error) {
+      console.error('Error creating product with image:', error);
+      
+      // Clean up the uploaded file if product creation failed
+      if (req.file) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (unlinkError) {
+          console.error('Error deleting uploaded file:', unlinkError);
+        }
+      }
+      
+      res.status(500).json({ message: 'Failed to create product with image' });
     }
   });
   

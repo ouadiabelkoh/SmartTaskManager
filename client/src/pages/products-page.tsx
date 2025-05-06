@@ -112,7 +112,7 @@ export default function ProductsPage() {
   });
 
   // File input ref
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // State for image preview
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -314,7 +314,9 @@ export default function ProductsPage() {
     editForm.reset({
       name: product.name,
       description: product.description || "",
-      price: product.price,
+      price: typeof product.price === 'number' 
+        ? product.price 
+        : parseFloat(product.price as string),
       category_id: product.category_id,
       stock: product.stock,
       barcode: product.barcode || "",
@@ -615,7 +617,6 @@ export default function ProductsPage() {
                                       onChange={handleImageChange}
                                       accept="image/jpeg,image/png,image/webp"
                                       className="hidden"
-                                      {...field}
                                     />
                                     <Button
                                       type="button"
