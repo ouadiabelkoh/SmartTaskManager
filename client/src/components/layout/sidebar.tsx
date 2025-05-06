@@ -15,6 +15,7 @@ import {
   UserCheck, 
   BarChart, 
   Users, 
+  Users2,
   Settings, 
   LogOut,
   Wifi,
@@ -77,6 +78,7 @@ export function Sidebar({ currentPath }: SidebarProps) {
 
   const salesItems = [
     { path: "/orders", label: "Orders", icon: <FileText className="h-5 w-5" /> },
+    { path: "/people", label: "People", icon: <Users2 className="h-5 w-5" /> },
     { path: "/customers", label: "Customers", icon: <UserCheck className="h-5 w-5" /> },
   ];
 
