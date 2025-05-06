@@ -1,6 +1,6 @@
 import { db } from "@db";
 import connectPg from "connect-pg-simple";
-import { eq, desc, and, or, like, gte, lte, isNull, count } from "drizzle-orm";
+import { eq, desc, and, or, like, gte, lte, isNull, count, sql, asc } from "drizzle-orm";
 import session from "express-session";
 import { pool } from "@db";
 import {
@@ -214,14 +214,14 @@ export class DatabaseStorage implements IStorage {
 
   async getLowStockProducts(): Promise<Product[]> {
     // Get all products where stock is less than or equal to their low_stock_threshold
-    // Using a raw SQL query to compare stock with low_stock_threshold
-    const result = await db.$queryRaw`
-      SELECT * FROM products 
-      WHERE stock <= low_stock_threshold
-      ORDER BY stock ASC
-      LIMIT 10
-    `;
-    return result as Product[];
+    // Using standard Drizzle ORM query instead of raw SQL
+    const result = await db.select()
+      .from(products)
+      .where(sql`${products.stock} <= ${products.low_stock_threshold}`)
+      .orderBy(asc(products.stock))
+      .limit(10);
+    
+    return result;
   }
 
   // People (Customers & Suppliers) functions

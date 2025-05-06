@@ -288,12 +288,27 @@ export function setupAuth(app: Express) {
     passport.authenticate("local", (err, user, info) => {
       if (err) return next(err);
       if (!user) {
+        console.log("Authentication failed for user:", req.body.username, "Info:", info);
         return res.status(401).json({ message: info?.message || "Authentication failed" });
       }
       
+      // If authentication succeeded, log the user in
+      console.log("Authentication succeeded for user:", user.username);
+      
       req.login(user, (loginErr) => {
-        if (loginErr) return next(loginErr);
-        return res.json(user);
+        if (loginErr) {
+          console.log("Login error:", loginErr);
+          return next(loginErr);
+        }
+        
+        // Sanitize the user object before sending it to the client
+        const safeUser = { 
+          ...user,
+          // Remove sensitive fields
+          password: undefined 
+        };
+        
+        return res.json(safeUser);
       });
     })(req, res, next);
   });
