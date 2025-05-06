@@ -119,7 +119,9 @@ export function ProductCard({ product, addToCart, compact = false }: ProductCard
             "font-semibold text-foreground",
             compact ? "text-xs" : "text-sm"
           )}>
-            ${price.toFixed(2)}
+            ${typeof price === 'number' 
+                ? price.toFixed(2) 
+                : Number(price).toFixed(2)}
           </p>
           
           {barcode && !compact && (

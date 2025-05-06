@@ -228,10 +228,14 @@ export function EnhancedCart({
                       <div className="flex justify-between items-end">
                         <div>
                           <p className="text-sm text-muted-foreground">
-                            ${item.product.price.toFixed(2)} × {item.quantity}
+                            ${typeof item.product.price === 'number'
+                              ? item.product.price.toFixed(2)
+                              : Number(item.product.price).toFixed(2)} × {item.quantity}
                           </p>
                           <p className="font-medium text-sm">
-                            ${(item.product.price * item.quantity).toFixed(2)}
+                            ${(typeof item.product.price === 'number'
+                              ? item.product.price * item.quantity
+                              : Number(item.product.price) * item.quantity).toFixed(2)}
                           </p>
                         </div>
                         
@@ -311,7 +315,7 @@ export function EnhancedCart({
                       />
                       {discount > 0 && (
                         <p className="text-xs text-muted-foreground">
-                          Discount: ${discountAmount.toFixed(2)}
+                          Discount: ${typeof discountAmount === 'number' ? discountAmount.toFixed(2) : Number(discountAmount).toFixed(2)}
                         </p>
                       )}
                     </div>
@@ -342,26 +346,26 @@ export function EnhancedCart({
             <div className="w-full space-y-1">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>${cartTotal.toFixed(2)}</span>
+                <span>${typeof cartTotal === 'number' ? cartTotal.toFixed(2) : Number(cartTotal).toFixed(2)}</span>
               </div>
               
               {discount > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Discount ({discount}%)</span>
-                  <span className="text-destructive">-${discountAmount.toFixed(2)}</span>
+                  <span className="text-destructive">-${typeof discountAmount === 'number' ? discountAmount.toFixed(2) : Number(discountAmount).toFixed(2)}</span>
                 </div>
               )}
               
               {tax > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Tax ({tax}%)</span>
-                  <span>${taxAmount.toFixed(2)}</span>
+                  <span>${typeof taxAmount === 'number' ? taxAmount.toFixed(2) : Number(taxAmount).toFixed(2)}</span>
                 </div>
               )}
               
               <div className="flex justify-between font-medium text-base pt-2 border-t">
                 <span>Total</span>
-                <span>${finalTotal.toFixed(2)}</span>
+                <span>${typeof finalTotal === 'number' ? finalTotal.toFixed(2) : Number(finalTotal).toFixed(2)}</span>
               </div>
             </div>
             
