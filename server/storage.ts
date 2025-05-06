@@ -190,15 +190,14 @@ export class DatabaseStorage implements IStorage {
 
   async getLowStockProducts(): Promise<Product[]> {
     // Get all products where stock is less than or equal to their low_stock_threshold
-    // Using a raw expression to compare columns
-    return await db.select()
-      .from(products)
-      .where(
-        // If stock is less than or equal to the product-specific threshold
-        db.expr(products.stock.name + ' <= ' + products.low_stock_threshold.name)
-      )
-      .orderBy(products.stock)
-      .limit(10);
+    // Using a raw SQL query to compare stock with low_stock_threshold
+    const result = await db.$queryRaw`
+      SELECT * FROM products 
+      WHERE stock <= low_stock_threshold
+      ORDER BY stock ASC
+      LIMIT 10
+    `;
+    return result as Product[];
   }
 
   // Customer functions
