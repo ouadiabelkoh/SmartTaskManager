@@ -185,6 +185,21 @@ export default function InventoryPage() {
     }
   }, [selectedProduct, isEditProductDialogOpen, productEditForm]);
   
+  // New product form
+  const newProductForm = useForm<ProductEditFormValues>({
+    resolver: zodResolver(productEditSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      price: 0,
+      category_id: 0,
+      barcode: "",
+      sku: "",
+      stock: 0,
+      image: "",
+    },
+  });
+  
   // Edit product mutation
   const editProductMutation = useMutation({
     mutationFn: async (data: ProductEditFormValues) => {
@@ -208,9 +223,47 @@ export default function InventoryPage() {
     },
   });
   
+  // Create new product mutation
+  const createProductMutation = useMutation({
+    mutationFn: async (data: ProductEditFormValues) => {
+      const res = await apiRequest("POST", "/api/products", data);
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      setIsNewProductDialogOpen(false);
+      newProductForm.reset({
+        name: "",
+        description: "",
+        price: 0,
+        category_id: 0,
+        barcode: "",
+        sku: "",
+        stock: 0,
+        image: "",
+      });
+      toast({
+        title: "Product created",
+        description: "New product has been added successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to create product",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
   // Handle edit product submit
   const onProductEditSubmit = (data: ProductEditFormValues) => {
     editProductMutation.mutate(data);
+  };
+  
+  // Handle new product submit
+  const onNewProductSubmit = (data: ProductEditFormValues) => {
+    createProductMutation.mutate(data);
   };
 
   // Filter products based on search query, category, and stock level
@@ -298,7 +351,11 @@ export default function InventoryPage() {
             <h1 className="text-2xl font-semibold text-foreground">Inventory Management</h1>
             
             <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-              <Button onClick={() => setIsAdjustDialogOpen(true)}>
+              <Button onClick={() => setIsNewProductDialogOpen(true)} variant="default">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Product
+              </Button>
+              <Button onClick={() => setIsAdjustDialogOpen(true)} variant="outline">
                 <ArrowUpDown className="mr-2 h-4 w-4" />
                 Adjust Inventory
               </Button>
@@ -951,6 +1008,203 @@ export default function InventoryPage() {
                   <Loader2 className="h-8 w-8 animate-spin" />
                 </div>
               )}
+            </DialogContent>
+          </Dialog>
+          
+          {/* New Product Dialog */}
+          <Dialog open={isNewProductDialogOpen} onOpenChange={setIsNewProductDialogOpen}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Add New Product</DialogTitle>
+                <DialogDescription>
+                  Create a new product in your inventory.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <Form {...newProductForm}>
+                <form onSubmit={newProductForm.handleSubmit(onNewProductSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={newProductForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Product Name *</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={newProductForm.control}
+                      name="category_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Category *</FormLabel>
+                          <Select 
+                            onValueChange={(value) => field.onChange(parseInt(value))}
+                            value={field.value === 0 ? "" : field.value.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {categoriesLoading ? (
+                                <div className="flex justify-center p-2">
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                </div>
+                              ) : (
+                                categories?.map(category => (
+                                  <SelectItem 
+                                    key={category.id} 
+                                    value={category.id.toString()}
+                                  >
+                                    {category.name}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={newProductForm.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Price *</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.01"
+                              min="0"
+                              {...field}
+                              onChange={(e) => {
+                                const value = e.target.value === "" ? "0" : e.target.value;
+                                field.onChange(value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={newProductForm.control}
+                      name="stock"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Initial Stock *</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="0"
+                              {...field}
+                              onChange={(e) => {
+                                const value = e.target.value === "" ? "0" : e.target.value;
+                                field.onChange(value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={newProductForm.control}
+                      name="sku"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>SKU</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={newProductForm.control}
+                      name="barcode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Barcode</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <FormField
+                    control={newProductForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Product description" 
+                            {...field} 
+                            rows={3}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={newProductForm.control}
+                    name="image"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Image URL</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="https://example.com/image.jpg" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsNewProductDialogOpen(false)}
+                      className="mr-2"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={createProductMutation.isPending}
+                    >
+                      {createProductMutation.isPending && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Create Product
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
             </DialogContent>
           </Dialog>
         </main>
