@@ -331,7 +331,7 @@ export function EnhancedCart({
                       />
                       {tax > 0 && (
                         <p className="text-xs text-muted-foreground">
-                          Tax: ${taxAmount.toFixed(2)}
+                          Tax: ${typeof taxAmount === 'number' ? taxAmount.toFixed(2) : Number(taxAmount).toFixed(2)}
                         </p>
                       )}
                     </div>
