@@ -62,24 +62,36 @@ export const insertProductSchema = createInsertSchema(products, {
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof products.$inferSelect;
 
-// Customers
-export const customers = pgTable("customers", {
+// People (Customers and Suppliers)
+export const people = pgTable("people", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  type: text("type", { enum: ["customer", "supplier", "both"] }).notNull(),
   email: text("email"),
   phone: text("phone"),
   address: text("address"),
+  id_number: text("id_number"),  // For ID card or barcode
   notes: text("notes"),
   created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const insertCustomerSchema = createInsertSchema(customers, {
+export const insertPersonSchema = createInsertSchema(people, {
   name: (schema) => schema.min(2, "Name must be at least 2 characters"),
+  type: (schema) => schema.refine(val => ["customer", "supplier", "both"].includes(val), {
+    message: "Type must be customer, supplier, or both"
+  }),
   email: (schema) => schema.email("Please provide a valid email").optional().or(z.literal("")),
 });
 
-export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
-export type Customer = typeof customers.$inferSelect;
+export type InsertPerson = z.infer<typeof insertPersonSchema>;
+export type Person = typeof people.$inferSelect;
+
+// Maintain backward compatibility with existing 'customers' references
+export const customers = people;
+export const insertCustomerSchema = insertPersonSchema;
+export type InsertCustomer = InsertPerson;
+export type Customer = Person;
 
 // Inventory Transactions
 export const inventory = pgTable("inventory", {
