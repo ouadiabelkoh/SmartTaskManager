@@ -177,16 +177,21 @@ export function EnhancedCart({
       <Tabs 
         value={cartTab} 
         onValueChange={(value) => setCartTab(value as "current" | "saved" | "recent")} 
-        className="flex-1 flex flex-col"
+        className="flex-1 flex flex-col h-full"
       >
-        <TabsList className="grid grid-cols-3 sticky top-0 z-10">
+        <TabsList className="grid grid-cols-3 sticky top-0 z-10 flex-shrink-0">
           <TabsTrigger value="current">Current</TabsTrigger>
           <TabsTrigger value="saved">Saved</TabsTrigger>
           <TabsTrigger value="recent">Recent</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="current" className="flex-1 flex flex-col data-[state=active]:flex-1">
-          <div className="flex-1 overflow-auto h-full overflow-y-auto touch-auto">
+        <TabsContent value="current" className="h-full flex flex-col overflow-hidden">
+          <div style={{ 
+            flex: 1,
+            overflow: "auto",
+            WebkitOverflowScrolling: "touch",
+            minHeight: 0 // Critical for making flex child scrollable
+          }}>
             {cartItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full p-6 text-center">
                 <PackagePlus className="h-12 w-12 text-muted-foreground mb-4" />
@@ -426,7 +431,7 @@ export function EnhancedCart({
           </CardFooter>
         </TabsContent>
         
-        <TabsContent value="saved" className="flex-1 flex flex-col data-[state=active]:flex-1">
+        <TabsContent value="saved" className="h-full flex flex-col overflow-hidden">
           <div className="flex flex-col items-center justify-center h-full p-6 text-center">
             <Save className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground mb-2">No saved carts</p>
@@ -436,7 +441,7 @@ export function EnhancedCart({
           </div>
         </TabsContent>
         
-        <TabsContent value="recent" className="flex-1 flex flex-col data-[state=active]:flex-1">
+        <TabsContent value="recent" className="h-full flex flex-col overflow-hidden">
           <div className="flex flex-col items-center justify-center h-full p-6 text-center">
             <Clock className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground mb-2">No recent orders</p>
