@@ -238,7 +238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const productData = {
         name: req.body.name,
         description: req.body.description || '',
-        price: Number(req.body.price),
+        price: req.body.price, // Keep as string for Drizzle ORM compatibility
         category_id: Number(req.body.category_id),
         stock: Number(req.body.stock) || 0,
         barcode: req.body.barcode || '',
@@ -575,7 +575,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const threshold = req.query.threshold ? Number(req.query.threshold) : 10;
       const lowStockProducts = await storage.getLowStockProducts(threshold);
-      res.json(lowStockProducts);
+      
+      // Enhance the API response with image paths for each product
+      const productsWithImages = lowStockProducts.map(product => {
+        // If the product has an image property, make sure it's the full path
+        if (product.image && !product.image.startsWith('/uploads')) {
+          return {
+            ...product,
+            image: `/uploads/products/${product.image}`
+          };
+        }
+        return product;
+      });
+      
+      res.json(productsWithImages);
     } catch (error) {
       console.error('Error fetching low stock products:', error);
       res.status(500).json({ message: 'Failed to fetch low stock products' });
