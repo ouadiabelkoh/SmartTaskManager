@@ -12,6 +12,12 @@ async function hashPassword(password: string) {
   return `${buf.toString("hex")}.${salt}`;
 }
 
+async function hashPin(pin: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(pin, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
+
 async function seed() {
   try {
     console.log("Starting database seeding...");
@@ -32,7 +38,7 @@ async function seed() {
         username: "admin",
         password: await hashPassword("admin123"),
         role: "admin",
-        pin_code: "1234", // Store PIN directly
+        pin_code: await hashPin("1234"), // Hash the PIN
         phone_number: "555-ADMIN",
         barcode: "ADMIN-BARCODE-123",
       });
@@ -44,7 +50,7 @@ async function seed() {
       if (!existingAdmin.pin_code) {
         await db.update(schema.users)
           .set({ 
-            pin_code: "1234", // Store PIN directly
+            pin_code: await hashPin("1234"), // Hash the PIN
             phone_number: existingAdmin.phone_number || "555-ADMIN",
             barcode: existingAdmin.barcode || "ADMIN-BARCODE-123" 
           })
@@ -60,7 +66,7 @@ async function seed() {
       {
         username: "cashier",
         password: await hashPassword("cashier123"),
-        pin_code: "5678", // We'll store PIN directly since schema validation has been relaxed
+        pin_code: await hashPin("5678"), // Hash the PIN
         role: "cashier",
       },
       {
@@ -88,7 +94,16 @@ async function seed() {
         await db.insert(schema.users).values(validUser);
         console.log(`${user.username} user created.`);
       } else {
-        console.log(`${user.username} user already exists, skipping creation.`);
+        // If it's the cashier and PIN is not set, update it
+        if (user.username === "cashier" && user.pin_code && !existingUser.pin_code) {
+          console.log(`Updating PIN for ${user.username} user...`);
+          await db.update(schema.users)
+            .set({ pin_code: user.pin_code })
+            .where(eq(schema.users.id, existingUser.id));
+          console.log(`Updated PIN for ${user.username} user.`);
+        } else {
+          console.log(`${user.username} user already exists, skipping creation.`);
+        }
       }
     }
 
