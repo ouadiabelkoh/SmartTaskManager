@@ -53,11 +53,11 @@ export function LowStock() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
-  // Fetch low stock items with the real API endpoint
+  // Fetch low stock items with the real API endpoint (now using product-specific thresholds)
   const { data: lowStockItems, isLoading } = useQuery<Product[]>({
     queryKey: ["/api/dashboard/low-stock"],
     queryFn: async () => {
-      const response = await fetch('/api/dashboard/low-stock?threshold=10');
+      const response = await fetch('/api/dashboard/low-stock');
       if (!response.ok) {
         throw new Error('Failed to fetch low stock items');
       }
