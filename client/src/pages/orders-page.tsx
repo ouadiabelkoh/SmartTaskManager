@@ -27,8 +27,17 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Loader2, Search, Eye, FileText } from "lucide-react";
-import { format } from "date-fns";
+import { Loader2, Search, Eye, FileText, Trash, RefreshCcw, Share2, Calendar, CalendarIcon } from "lucide-react";
+import { format, subDays } from "date-fns";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { DateRange } from "react-day-picker";
 
 type Order = {
   id: number;
@@ -62,13 +71,46 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 30),
+    to: new Date(),
+  });
+  const { toast } = useToast();
 
   // Fetch orders
   const { data: orders, isLoading: ordersLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
   });
 
-  // Filter orders based on search query and status
+  // Mutations for order actions
+  const updateOrderStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const res = await apiRequest("PATCH", `/api/orders/${id}/status`, { status });
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({
+        title: "Order status updated",
+        description: "The order status has been successfully updated.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to update order status",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Function to cancel an order
+  const cancelOrder = (id: number) => {
+    updateOrderStatusMutation.mutate({ id, status: "cancelled" });
+    setIsDetailsDialogOpen(false);
+  };
+
+  // Filter orders based on search query, status and date range
   const filteredOrders = orders?.filter(order => {
     const matchesSearch = 
       order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -76,7 +118,21 @@ export default function OrdersPage() {
     
     const matchesStatus = !statusFilter || statusFilter === "all" || order.status === statusFilter;
     
-    return matchesSearch && matchesStatus;
+    // Check if the order date is within the selected range
+    let matchesDateRange = true;
+    if (dateRange?.from) {
+      const orderDate = new Date(order.created_at);
+      matchesDateRange = orderDate >= dateRange.from;
+      
+      if (dateRange.to) {
+        // Add one day to include the 'to' date fully
+        const toDate = new Date(dateRange.to);
+        toDate.setDate(toDate.getDate() + 1);
+        matchesDateRange = matchesDateRange && orderDate < toDate;
+      }
+    }
+    
+    return matchesSearch && matchesStatus && matchesDateRange;
   });
 
   // Open order details dialog
@@ -125,18 +181,58 @@ export default function OrdersPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               </div>
               
-              <Select value={statusFilter || "all"} onValueChange={setStatusFilter} className="w-full sm:w-40">
-                <SelectTrigger>
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="w-full sm:w-40">
+                <Select 
+                  value={statusFilter || "all"} 
+                  onValueChange={(value) => setStatusFilter(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="processing">Processing</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="w-full sm:w-auto">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateRange?.from ? (
+                        dateRange.to ? (
+                          <>
+                            {format(dateRange.from, "LLL dd, y")} -{" "}
+                            {format(dateRange.to, "LLL dd, y")}
+                          </>
+                        ) : (
+                          format(dateRange.from, "LLL dd, y")
+                        )
+                      ) : (
+                        <span>Filter by date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarComponent
+                      initialFocus
+                      mode="range"
+                      defaultMonth={dateRange?.from}
+                      selected={dateRange}
+                      onSelect={setDateRange}
+                      numberOfMonths={2}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
           </div>
           
@@ -237,6 +333,12 @@ export default function OrdersPage() {
                       <h3 className="text-sm font-medium text-muted-foreground">Customer</h3>
                       <p className="text-foreground">{selectedOrder.customer_name || "Guest"}</p>
                     </div>
+                    <div className="col-span-2">
+                      <h3 className="text-sm font-medium text-muted-foreground">Notes</h3>
+                      <p className="text-foreground">
+                        {selectedOrder.notes || "No notes for this order."}
+                      </p>
+                    </div>
                   </div>
                   
                   <div>
@@ -270,11 +372,33 @@ export default function OrdersPage() {
                     <span className="text-lg font-bold">${selectedOrder.total.toFixed(2)}</span>
                   </div>
                   
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)}>
-                      Close
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-6">
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      disabled={selectedOrder.status === 'cancelled' || updateOrderStatusMutation.isPending}
+                      onClick={() => cancelOrder(selectedOrder.id)}
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      Cancel Order
                     </Button>
-                    <Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                    >
+                      <RefreshCcw className="mr-2 h-4 w-4" />
+                      Resell
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                    >
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Send WhatsApp
+                    </Button>
+                    <Button 
+                      className="w-full"
+                    >
                       <FileText className="mr-2 h-4 w-4" />
                       Print Receipt
                     </Button>
