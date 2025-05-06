@@ -63,6 +63,7 @@ type Product = {
   price: number | string;
   category_id: number;
   stock: number;
+  low_stock_threshold?: number;
   barcode?: string;
   sku?: string;
   image?: string;
@@ -79,6 +80,7 @@ const productSchema = z.object({
   price: z.coerce.number().positive("Price must be a positive number"),
   category_id: z.coerce.number().positive("Please select a category"),
   stock: z.coerce.number().nonnegative("Stock cannot be negative"),
+  low_stock_threshold: z.coerce.number().nonnegative("Threshold cannot be negative").default(10),
   barcode: z.string().optional(),
   sku: z.string().optional(),
   image: z.instanceof(File)
@@ -126,6 +128,7 @@ export default function ProductsPage() {
       price: 0,
       category_id: 0,
       stock: 0,
+      low_stock_threshold: 10,
       barcode: "",
       sku: "",
       image: undefined,
@@ -157,6 +160,7 @@ export default function ProductsPage() {
       price: 0,
       category_id: 0,
       stock: 0,
+      low_stock_threshold: 10,
       barcode: "",
       sku: "",
     },
@@ -319,6 +323,7 @@ export default function ProductsPage() {
         : parseFloat(product.price as string),
       category_id: product.category_id,
       stock: product.stock,
+      low_stock_threshold: product.low_stock_threshold || 10,
       barcode: product.barcode || "",
       sku: product.sku || "",
     });
